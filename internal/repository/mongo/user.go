@@ -11,7 +11,11 @@ import (
 )
 
 type UserRepository struct {
-	DB mongo.Database
+	DB *mongo.Database
+}
+
+func NewUserRepository(DB *mongo.Database) *UserRepository {
+	return &UserRepository{DB: DB}
 }
 
 func (ur UserRepository) GetUserByEmail(email string) (*entity.User, error) {

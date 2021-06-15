@@ -1,7 +1,17 @@
 package app
 
-type UseCases struct{}
+import (
+	"github.com/ardafirdausr/discuss-server/internal"
+	"github.com/ardafirdausr/discuss-server/internal/usecase"
+)
 
-func newUseCases() *UseCases {
-	return &UseCases{}
+type UseCases struct {
+	AuthUsecase internal.AuthUsecase
+}
+
+func newUseCases(repos *Repositories) *UseCases {
+	authUsecase := usecase.NewAuthUsecase(repos.userRepo)
+	return &UseCases{
+		AuthUsecase: authUsecase,
+	}
 }
