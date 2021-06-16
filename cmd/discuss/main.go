@@ -1,10 +1,10 @@
 package main
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/ardafirdausr/discuss-server/internal/app"
+	"github.com/ardafirdausr/discuss-server/internal/delivery/web"
 )
 
 func main() {
@@ -13,5 +13,5 @@ func main() {
 		log.Fatalf("Failed initiate the app\n%v", err)
 	}
 
-	fmt.Println(app)
+	web.Start(app)
 }

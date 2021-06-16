@@ -8,7 +8,7 @@ import (
 
 type App struct {
 	repositories *Repositories
-	usecases     *UseCases
+	Usecases     *Usecases
 }
 
 func New() (*App, error) {
@@ -27,6 +27,6 @@ func New() (*App, error) {
 	}
 
 	app.repositories = repos
-	app.usecases = newUseCases(repos)
+	app.Usecases = newUsecases(repos)
 	return app, nil
 }

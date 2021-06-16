@@ -23,7 +23,7 @@ func (service AuthUsecase) SSO(token string, authenticator internal.SSOAuthentic
 	}
 
 	user, err := service.userRepo.GetUserByEmail(reqUser.Email)
-	if _, ok := err.(*entity.ErrNotFound); ok {
+	if _, ok := err.(entity.ErrNotFound); ok {
 		param := entity.CreateUserParam{
 			Email:    reqUser.Email,
 			Name:     reqUser.Name,

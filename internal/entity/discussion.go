@@ -22,8 +22,8 @@ type CreateDiscussionParam struct {
 	Description string    `json:"description" bson:"description"`
 	PhotoUrl    string    `json:"photo_url" bson:"photoUrl"`
 	CreatorID   string    `json:"creator" bson:"creator"`
-	CreatedAt   time.Time `bson:"createdAt"`
-	UpdatedAt   time.Time `bson:"updatedAt"`
+	CreatedAt   time.Time `bson:"created_at"`
+	UpdatedAt   time.Time `bson:"updated_at"`
 }
 
 type UpdateDiscussionParam struct {
@@ -32,5 +32,5 @@ type UpdateDiscussionParam struct {
 	Password    *string   `json:"password,omitempty" bson:"password"`
 	Description string    `json:"description" bson:"description"`
 	PhotoUrl    string    `json:"photo_url" bson:"photoUrl"`
-	UpdatedAt   time.Time `bson:"updatedAt"`
+	UpdatedAt   time.Time `bson:"updated_at"`
 }

@@ -6,7 +6,7 @@ type TokenPayload struct {
 	ID       string `json:"id"`
 	Name     string `json:"name"`
 	Email    string `json:"email"`
-	Imageurl string `json:"imageUrl"`
+	Imageurl string `json:"image_url"`
 }
 type JWTPayload struct {
 	TokenPayload
@@ -17,5 +17,5 @@ type GoogleAuth struct {
 	TokenID  string `json:"token_id,omitempty"`
 	Name     string `json:"name,omitempty"`
 	Email    string `json:"email,omitempty"`
-	Imageurl string `json:"imageUrl,omitempty"`
+	Imageurl string `json:"image_url,omitempty"`
 }
