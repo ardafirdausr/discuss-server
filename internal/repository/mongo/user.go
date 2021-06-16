@@ -36,7 +36,6 @@ func (ur UserRepository) GetUserByEmail(email string) (*entity.User, error) {
 	}
 
 	return &user, nil
-
 }
 
 func (ur UserRepository) Create(param entity.CreateUserParam) (*entity.User, error) {

@@ -9,3 +9,10 @@ type SSOAuthenticator interface {
 type Tokenizer interface {
 	Generate(entity.TokenPayload) (string, error)
 }
+
+type Mailer interface {
+	SendMail(entity.Mail) error
+}
+
+type PubSub interface {
+}
