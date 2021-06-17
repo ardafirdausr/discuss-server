@@ -3,11 +3,12 @@ package entity
 import "github.com/dgrijalva/jwt-go"
 
 type TokenPayload struct {
-	ID       string `json:"id"`
-	Name     string `json:"name"`
-	Email    string `json:"email"`
-	Imageurl string `json:"image_url"`
+	ID       interface{} `json:"id"`
+	Name     string      `json:"name"`
+	Email    string      `json:"email"`
+	Imageurl string      `json:"image_url"`
 }
+
 type JWTPayload struct {
 	TokenPayload
 	jwt.StandardClaims

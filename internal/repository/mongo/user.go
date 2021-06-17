@@ -6,7 +6,6 @@ import (
 
 	"github.com/ardafirdausr/discuss-server/internal/entity"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -45,10 +44,8 @@ func (ur UserRepository) Create(param entity.CreateUserParam) (*entity.User, err
 		return nil, err
 	}
 
-	objID := res.InsertedID.(primitive.ObjectID)
-
 	user := &entity.User{
-		ID:       objID.Hex(),
+		ID:       res.InsertedID,
 		Email:    param.Email,
 		Name:     param.Name,
 		ImageUrl: param.ImageUrl,

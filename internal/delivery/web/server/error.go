@@ -28,6 +28,11 @@ func (che CustomHTTPErrorHandler) Handler(err error, c echo.Context) {
 		he.Message = ev.Message
 	}
 
+	if ent, ok := err.(entity.ErrBadRequest); ok {
+		he.Code = http.StatusBadRequest
+		he.Message = ent.Message
+	}
+
 	if ent, ok := err.(entity.ErrNotFound); ok {
 		he.Code = http.StatusNotFound
 		he.Message = ent.Message

@@ -27,6 +27,10 @@ func (auth GoogleSSOAuthenticator) getTokenPayload(token string) (*idtoken.Paylo
 
 	payload, err := tokenValidator.Validate(context.Background(), token, auth.clientID)
 	if err != nil {
+		err := entity.ErrBadRequest{
+			Message: "Invalid token",
+			Err:     err,
+		}
 		log.Println(err.Error())
 		return nil, err
 	}
