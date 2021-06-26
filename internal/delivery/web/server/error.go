@@ -28,7 +28,7 @@ func (che CustomHTTPErrorHandler) Handler(err error, c echo.Context) {
 		he.Message = ev.Message
 	}
 
-	if ent, ok := err.(entity.ErrBadRequest); ok {
+	if ent, ok := err.(entity.ErrInvalidData); ok {
 		he.Code = http.StatusBadRequest
 		he.Message = ent.Message
 	}

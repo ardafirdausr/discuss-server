@@ -15,7 +15,9 @@ import (
 )
 
 type Repositories struct {
-	userRepo internal.UserRepository
+	userRepo       internal.UserRepository
+	discussionRepo internal.DiscussionRepository
+	messageRepo    internal.MessageRepository
 }
 
 func newRepositories() (*Repositories, error) {
@@ -32,10 +34,14 @@ func newRepositories() (*Repositories, error) {
 	// }
 
 	userRepo := mongoRepo.NewUserRepository(mongoDB)
+	discussionRepo := mongoRepo.NewDiscussionRepository(mongoDB)
+	messageRepo := mongoRepo.NewMessageRepository(mongoDB)
 	// pubsubRepo := redisRepo.NewPubSubRepository(redis)
 
 	return &Repositories{
-		userRepo: userRepo,
+		userRepo:       userRepo,
+		discussionRepo: discussionRepo,
+		messageRepo:    messageRepo,
 	}, nil
 }
 

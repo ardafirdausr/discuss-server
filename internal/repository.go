@@ -9,14 +9,16 @@ type UserRepository interface {
 
 type MessageRepository interface {
 	Create(param entity.CreateMessage) (*entity.Message, error)
-	GetMessagesByDiscussionID(discussionID string) ([]*entity.Message, error)
+	GetMessagesByDiscussionID(discussionID interface{}) ([]*entity.Message, error)
 }
 
 type DiscussionRepository interface {
-	GetDissionsByUserID(userID string) ([]*entity.Discussion, error)
+	GetDiscussionsByID(ID interface{}) (*entity.Discussion, error)
+	GetDiscussionsByCode(code string) (*entity.Discussion, error)
+	GetDiscussionsByUserID(userID interface{}) ([]*entity.Discussion, error)
 	Create(param entity.CreateDiscussionParam) (*entity.Discussion, error)
-	UpdateByID(ID string, param entity.UpdateDiscussionParam) (bool, error)
-	DeleteByID(discussionID string) (bool, error)
+	UpdateByID(ID interface{}, param entity.UpdateDiscussionParam) error
+	DeleteByID(discussionID interface{}) error
 }
 
 type PubSubRepository interface {

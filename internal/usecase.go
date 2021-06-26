@@ -8,10 +8,12 @@ type AuthUsecase interface {
 }
 
 type DiscussionUsecase interface {
-	GetAllUserDiscussions(userID string) ([]*entity.Discussion, error)
-	GetDiscussionMessages(dicussionID string) ([]*entity.Message, error)
+	GetAllUserDiscussions(userID interface{}) ([]*entity.Discussion, error)
+	GetDiscussionByID(ID interface{}) (*entity.Discussion, error)
+	GetDiscussionByCode(code string) (*entity.Discussion, error)
+	GetDiscussionMessages(discussionID interface{}) ([]*entity.Message, error)
 	Create(param entity.CreateDiscussionParam) (*entity.Discussion, error)
-	SendMessage(dicussionID string, message entity.CreateMessage) (*entity.Message, error)
-	Update(dicussionID string, param entity.UpdateDiscussionParam) (bool, error)
-	Delete(dicussionID string) (bool, error)
+	SendMessage(discussionID interface{}, message entity.CreateMessage) (*entity.Message, error)
+	Update(discussionID interface{}, param entity.UpdateDiscussionParam) error
+	Delete(discussionID interface{}) error
 }

@@ -36,6 +36,6 @@ func (mr MessageRepository) Create(param entity.CreateMessage) (*entity.Message,
 	return message, nil
 }
 
-func (mr MessageRepository) GetMessagesByDiscussionID(discussionID string) ([]*entity.Message, error) {
+func (mr MessageRepository) GetMessagesByDiscussionID(discussionID interface{}) ([]*entity.Message, error) {
 	return nil, nil
 }

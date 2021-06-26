@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"log"
-	"time"
 
 	"github.com/ardafirdausr/discuss-server/internal/entity"
 	"go.mongodb.org/mongo-driver/bson"
@@ -20,8 +19,67 @@ func NewDiscussionRepository(DB *mongo.Database) *DiscussionRepository {
 	return &DiscussionRepository{DB: DB}
 }
 
-func (dr DiscussionRepository) GetDissionsByUserID(userID string) ([]*entity.Discussion, error) {
-	objID, err := primitive.ObjectIDFromHex(userID)
+func (dr DiscussionRepository) GetDiscussionsByID(ID interface{}) (*entity.Discussion, error) {
+	strID := ID.(string)
+	objID, err := primitive.ObjectIDFromHex(strID)
+	if err != nil {
+		log.Println(err.Error())
+		err = entity.ErrNotFound{
+			Message: "Discussion not found",
+			Err:     err,
+		}
+		return nil, err
+	}
+
+	ctx := context.TODO()
+	res := dr.DB.Collection("discussions").FindOne(ctx, bson.M{"_id": objID})
+	if res.Err() == mongo.ErrNoDocuments {
+		log.Println(res.Err())
+		err := entity.ErrNotFound{
+			Message: "Discussion not found",
+			Err:     res.Err(),
+		}
+		return nil, err
+	}
+
+	var discussion entity.Discussion
+	if err := res.Decode(&discussion); err != nil {
+		log.Println(err.Error())
+		return nil, err
+	}
+
+	return &discussion, nil
+}
+
+func (dr DiscussionRepository) GetDiscussionsByCode(code string) (*entity.Discussion, error) {
+	ctx := context.TODO()
+	res := dr.DB.Collection("discussions").FindOne(ctx, bson.M{"code": code})
+	if res.Err() == mongo.ErrNoDocuments {
+		log.Println(res.Err())
+		err := entity.ErrNotFound{
+			Message: "Discussion not found",
+			Err:     res.Err(),
+		}
+		return nil, err
+	}
+
+	var discussion entity.Discussion
+	if err := res.Decode(&discussion); err != nil {
+		log.Println(err.Error())
+		return nil, err
+	}
+
+	return &discussion, nil
+}
+
+func (dr DiscussionRepository) GetDiscussionsByUserID(userID interface{}) ([]*entity.Discussion, error) {
+	strUserID, ok := userID.(string)
+	if !ok {
+		err := entity.ErrNotFound{Message: "Invalid ID"}
+		return nil, err
+	}
+
+	objID, err := primitive.ObjectIDFromHex(strUserID)
 	if err != nil {
 		err = entity.ErrNotFound{
 			Message: "Failed get data using the corresponding ID",
@@ -53,23 +111,19 @@ func (dr DiscussionRepository) GetDissionsByUserID(userID string) ([]*entity.Dis
 }
 
 func (dr DiscussionRepository) Create(param entity.CreateDiscussionParam) (*entity.Discussion, error) {
-	param.CreatedAt = time.Now()
-	param.UpdatedAt = time.Now()
-
 	res, err := dr.DB.Collection("discussions").InsertOne(context.TODO(), param)
 	if err != nil {
 		log.Println(err.Error())
 		return nil, err
 	}
 
-	objID := res.InsertedID.(primitive.ObjectID)
 	discussion := &entity.Discussion{
-		ID:          objID.Hex(),
+		ID:          res.InsertedID,
 		Code:        param.Code,
 		Name:        param.Name,
-		Password:    param.Password,
 		Description: param.Description,
-		PhotoUrl:    param.PhotoUrl,
+		PhotoUrl:    nil,
+		CreatorID:   param.CreatorID,
 		CreatedAt:   param.CreatedAt,
 		UpdatedAt:   param.UpdatedAt,
 	}
@@ -77,51 +131,69 @@ func (dr DiscussionRepository) Create(param entity.CreateDiscussionParam) (*enti
 	return discussion, nil
 }
 
-func (dr DiscussionRepository) Update(ID string, param entity.CreateDiscussionParam) (bool, error) {
-	objID, err := primitive.ObjectIDFromHex(ID)
+func (dr DiscussionRepository) UpdateByID(ID interface{}, param entity.UpdateDiscussionParam) error {
+	strID, ok := ID.(string)
+	if !ok {
+		err := entity.ErrNotFound{Message: "Invalid ID"}
+		return err
+	}
+
+	objID, err := primitive.ObjectIDFromHex(strID)
 	if err != nil {
 		err = entity.ErrNotFound{
 			Message: "Failed get data using the corresponding ID",
 			Err:     err,
 		}
-		return false, err
+		return err
 	}
 
-	param.UpdatedAt = time.Now()
-
-	res, err := dr.DB.Collection("discussions").UpdateByID(context.TODO(), objID, param)
+	res, err := dr.DB.Collection("discussions").UpdateByID(context.TODO(), objID, bson.M{"$set": param})
 	if err != nil {
 		log.Println(err.Error())
-		return false, err
+		return err
 	}
 
 	if res.MatchedCount < 1 {
-		return false, errors.New("failed to update data")
+		err = entity.ErrNotFound{
+			Message: "Discussion not found",
+			Err:     errors.New("Document not found"),
+		}
+		return err
 	}
 
-	return true, nil
+	return nil
 }
 
-func (dr DiscussionRepository) DeleteByID(discussionID string) (bool, error) {
-	objID, err := primitive.ObjectIDFromHex(discussionID)
+func (dr DiscussionRepository) DeleteByID(discussionID interface{}) error {
+	strDiscussionID, ok := discussionID.(string)
+	if !ok {
+		err := entity.ErrNotFound{Message: "Invalid ID"}
+		return err
+	}
+
+	objID, err := primitive.ObjectIDFromHex(strDiscussionID)
 	if err != nil {
 		err = entity.ErrNotFound{
 			Message: "Failed get data using the corresponding ID",
 			Err:     err,
 		}
-		return false, err
+		return err
 	}
 
 	ctx := context.TODO()
 	res, err := dr.DB.Collection("discussions").DeleteOne(ctx, bson.M{"_id": objID})
 	if err != nil {
 		log.Println(err.Error())
-		return false, err
+		return err
 	}
 
 	if res.DeletedCount < 1 {
-		return false, errors.New("failed to delete data")
+		err = entity.ErrNotFound{
+			Message: "Discussion not found",
+			Err:     errors.New("Document not found"),
+		}
+		return err
 	}
 
-	return true, nil
+	return nil
 }

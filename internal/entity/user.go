@@ -5,7 +5,7 @@ type User struct {
 	Name        string        `json:"name" bson:"name"`
 	Email       string        `json:"email" bson:"email"`
 	ImageUrl    string        `json:"image_url" bson:"imageUrl"`
-	Discussions []*Discussion `json:"discussions" bson:"discussions"`
+	Discussions []interface{} `json:"-" bson:"discussions"`
 }
 
 type CreateUserParam struct {

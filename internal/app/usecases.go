@@ -6,12 +6,15 @@ import (
 )
 
 type Usecases struct {
-	AuthUsecase internal.AuthUsecase
+	AuthUsecase       internal.AuthUsecase
+	DiscussionUsecase internal.DiscussionUsecase
 }
 
 func newUsecases(repos *Repositories) *Usecases {
 	authUsecase := usecase.NewAuthUsecase(repos.userRepo)
+	discussionUsecase := usecase.NewDiscussionUsecase(repos.discussionRepo, repos.messageRepo)
 	return &Usecases{
-		AuthUsecase: authUsecase,
+		AuthUsecase:       authUsecase,
+		DiscussionUsecase: discussionUsecase,
 	}
 }

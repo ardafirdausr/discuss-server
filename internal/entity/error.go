@@ -1,15 +1,15 @@
 package entity
 
-type ErrBadRequest struct {
+type ErrInvalidData struct {
 	Message string
 	Err     error
 }
 
-func (ebr ErrBadRequest) Error() string {
-	if ebr.Err != nil {
-		return ebr.Err.Error()
-	} else if ebr.Message != "" {
-		return ebr.Message
+func (eid ErrInvalidData) Error() string {
+	if eid.Err != nil {
+		return eid.Err.Error()
+	} else if eid.Message != "" {
+		return eid.Message
 	} else {
 		return "Invalid request"
 	}
@@ -31,9 +31,8 @@ func (ent ErrNotFound) Error() string {
 }
 
 type ErrValidation struct {
-	Message          string
-	ValidationErrors []map[string]string
-	Err              error
+	Message string
+	Err     error
 }
 
 func (evl ErrValidation) Error() string {

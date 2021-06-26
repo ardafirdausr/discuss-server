@@ -22,20 +22,40 @@ func NewDiscussionUsecase(
 	}
 }
 
-func (du DiscussionUsecase) GetAllUserDiscussions(userID string) ([]*entity.Discussion, error) {
-	discussions, err := du.discussionRepo.GetDissionsByUserID(userID)
+func (du DiscussionUsecase) GetAllUserDiscussions(userID interface{}) ([]*entity.Discussion, error) {
+	discussions, err := du.discussionRepo.GetDiscussionsByUserID(userID)
 	if err != nil {
-		log.Panicln(err.Error())
+		log.Println(err.Error())
 		return nil, err
 	}
 
 	return discussions, nil
 }
 
-func (du DiscussionUsecase) GetDiscussionMessages(dicussionID string) ([]*entity.Message, error) {
-	messages, err := du.messageRepo.GetMessagesByDiscussionID(dicussionID)
+func (du DiscussionUsecase) GetDiscussionByID(ID interface{}) (*entity.Discussion, error) {
+	discussion, err := du.discussionRepo.GetDiscussionsByID(ID)
 	if err != nil {
-		log.Panicln(err.Error())
+		log.Println(err.Error())
+		return nil, err
+	}
+
+	return discussion, nil
+}
+
+func (du DiscussionUsecase) GetDiscussionByCode(code string) (*entity.Discussion, error) {
+	discussion, err := du.discussionRepo.GetDiscussionsByCode(code)
+	if err != nil {
+		log.Println(err.Error())
+		return nil, err
+	}
+
+	return discussion, nil
+}
+
+func (du DiscussionUsecase) GetDiscussionMessages(discussionID interface{}) ([]*entity.Message, error) {
+	messages, err := du.messageRepo.GetMessagesByDiscussionID(discussionID)
+	if err != nil {
+		log.Println(err.Error())
 		return nil, err
 	}
 
@@ -43,46 +63,95 @@ func (du DiscussionUsecase) GetDiscussionMessages(dicussionID string) ([]*entity
 }
 
 func (du DiscussionUsecase) Create(param entity.CreateDiscussionParam) (*entity.Discussion, error) {
+	discussion, err := du.GetDiscussionByCode(param.Code)
+	_, isErrNF := err.(entity.ErrNotFound)
+	if err != nil && !isErrNF {
+		return nil, err
+	}
+
+	if discussion != nil {
+		err = entity.ErrInvalidData{
+			Message: "Discussion code already exists",
+			Err:     nil,
+		}
+		return nil, err
+	}
+
 	param.CreatedAt = time.Now()
 	param.UpdatedAt = time.Now()
-	discussion, err := du.discussionRepo.Create(param)
+	param.Members = make([]interface{}, 0)
+
+	if param.Password != nil && len(*param.Password) > 0 {
+		*param.Password = hashString(*param.Password)
+	} else {
+		param.Password = nil
+	}
+
+	discussion, err = du.discussionRepo.Create(param)
 	if err != nil {
-		log.Panicln(err.Error())
+		log.Println(err.Error())
 		return nil, err
 	}
 
 	return discussion, nil
 }
 
-func (du DiscussionUsecase) SendMessage(dicussionID string, param entity.CreateMessage) (*entity.Message, error) {
-	param.DiscussID = dicussionID
+func (du DiscussionUsecase) SendMessage(discussionID interface{}, param entity.CreateMessage) (*entity.Message, error) {
+	param.DiscussID = discussionID
 	param.CreatedAt = time.Now()
 	message, err := du.messageRepo.Create(param)
 	if err != nil {
-		log.Panicln(err.Error())
+		log.Println(err.Error())
 		return nil, err
 	}
 
 	return message, nil
 }
 
-func (du DiscussionUsecase) Update(dicussionID string, param entity.UpdateDiscussionParam) (bool, error) {
-	param.UpdatedAt = time.Now()
-	isUpdated, err := du.discussionRepo.UpdateByID(dicussionID, param)
-	if err != nil {
-		log.Panicln(err.Error())
-		return false, err
+func (du DiscussionUsecase) Update(discussionID interface{}, param entity.UpdateDiscussionParam) error {
+	discussion, err := du.GetDiscussionByID(discussionID)
+	if _, isErrNF := err.(entity.ErrNotFound); isErrNF {
+		err = entity.ErrNotFound{
+			Message: "Discussion not found",
+			Err:     nil,
+		}
+		return err
 	}
 
-	return isUpdated, nil
+	if err != nil {
+		return err
+	}
+
+	existDiscussion, err := du.GetDiscussionByCode(param.Code)
+	_, isErrNF := err.(entity.ErrNotFound)
+	if err != nil && !isErrNF {
+		return err
+	}
+
+	if existDiscussion != nil && existDiscussion.Code == param.Code && existDiscussion.ID != discussion.ID {
+		err = entity.ErrInvalidData{
+			Message: "Discussion code already exists",
+			Err:     nil,
+		}
+		return err
+	}
+
+	param.UpdatedAt = time.Now()
+	err = du.discussionRepo.UpdateByID(discussionID, param)
+	if err != nil {
+		log.Println(err.Error())
+		return err
+	}
+
+	return nil
 }
 
-func (du DiscussionUsecase) Delete(dicussionID string) (bool, error) {
-	isDeleted, err := du.discussionRepo.DeleteByID(dicussionID)
+func (du DiscussionUsecase) Delete(discussionID interface{}) error {
+	err := du.discussionRepo.DeleteByID(discussionID)
 	if err != nil {
-		log.Panicln(err.Error())
-		return false, err
+		log.Println(err.Error())
+		return err
 	}
 
-	return isDeleted, nil
+	return nil
 }
