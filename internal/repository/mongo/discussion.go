@@ -164,6 +164,73 @@ func (dr DiscussionRepository) UpdateByID(ID interface{}, param entity.UpdateDis
 	return nil
 }
 
+func (dr DiscussionRepository) UpdatePasswordByID(ID interface{}, password string) error {
+	strID, ok := ID.(string)
+	if !ok {
+		err := entity.ErrNotFound{Message: "Invalid ID"}
+		return err
+	}
+
+	objID, err := primitive.ObjectIDFromHex(strID)
+	if err != nil {
+		err = entity.ErrNotFound{
+			Message: "Failed get data using the corresponding ID",
+			Err:     err,
+		}
+		return err
+	}
+
+	data := bson.M{"password": password}
+	res, err := dr.DB.Collection("discussions").UpdateByID(context.TODO(), objID, bson.M{"$set": data})
+	if err != nil {
+		log.Println(err.Error())
+		return err
+	}
+
+	if res.MatchedCount < 1 {
+		err = entity.ErrNotFound{
+			Message: "Discussion not found",
+			Err:     errors.New("Document not found"),
+		}
+		return err
+	}
+
+	return nil
+}
+
+func (dr DiscussionRepository) UpdatePhotoByID(ID interface{}, url string) error {
+	strID, ok := ID.(string)
+	if !ok {
+		err := entity.ErrNotFound{Message: "Invalid ID"}
+		return err
+	}
+
+	objID, err := primitive.ObjectIDFromHex(strID)
+	if err != nil {
+		err = entity.ErrNotFound{
+			Message: "Failed get data using the corresponding ID",
+			Err:     err,
+		}
+		return err
+	}
+	data := bson.M{"photoUrl": url}
+	res, err := dr.DB.Collection("discussions").UpdateByID(context.TODO(), objID, bson.M{"$set": data})
+	if err != nil {
+		log.Println(err.Error())
+		return err
+	}
+
+	if res.MatchedCount < 1 {
+		err = entity.ErrNotFound{
+			Message: "Discussion not found",
+			Err:     errors.New("Document not found"),
+		}
+		return err
+	}
+
+	return nil
+}
+
 func (dr DiscussionRepository) DeleteByID(discussionID interface{}) error {
 	strDiscussionID, ok := discussionID.(string)
 	if !ok {

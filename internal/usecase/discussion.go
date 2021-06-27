@@ -80,13 +80,6 @@ func (du DiscussionUsecase) Create(param entity.CreateDiscussionParam) (*entity.
 	param.CreatedAt = time.Now()
 	param.UpdatedAt = time.Now()
 	param.Members = make([]interface{}, 0)
-
-	if param.Password != nil && len(*param.Password) > 0 {
-		*param.Password = hashString(*param.Password)
-	} else {
-		param.Password = nil
-	}
-
 	discussion, err = du.discussionRepo.Create(param)
 	if err != nil {
 		log.Println(err.Error())
@@ -138,6 +131,27 @@ func (du DiscussionUsecase) Update(discussionID interface{}, param entity.Update
 
 	param.UpdatedAt = time.Now()
 	err = du.discussionRepo.UpdateByID(discussionID, param)
+	if err != nil {
+		log.Println(err.Error())
+		return err
+	}
+
+	return nil
+}
+
+func (du DiscussionUsecase) UpdatePassword(discussionID interface{}, param entity.UpdateDiscussionPassword) error {
+	hashedPassword := hashString(param.Password)
+	err := du.discussionRepo.UpdatePasswordByID(discussionID, hashedPassword)
+	if err != nil {
+		log.Println(err.Error())
+		return err
+	}
+
+	return nil
+}
+
+func (du DiscussionUsecase) UpdatePhoto(discussionID interface{}, param string) error {
+	err := du.discussionRepo.UpdatePhotoByID(discussionID, param)
 	if err != nil {
 		log.Println(err.Error())
 		return err

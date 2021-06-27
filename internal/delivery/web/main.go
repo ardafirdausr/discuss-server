@@ -22,6 +22,8 @@ func Start(app *app.App) {
 	discussionController := controller.NewDiscussionController(app.Usecases)
 	discussionGroup := web.Group("/discussions", JWTmiddleware)
 	discussionGroup.POST("", discussionController.CreateDiscussion)
+	discussionGroup.PUT("/:discussionId/photo", discussionController.UpdateDiscussionPhoto)
+	discussionGroup.PUT("/:discussionId/password", discussionController.UpdateDiscussionPassword)
 	discussionGroup.PUT("/:discussionId", discussionController.UpdateDiscussion)
 	discussionGroup.DELETE("/:discussionId", discussionController.DeleteDiscussion)
 

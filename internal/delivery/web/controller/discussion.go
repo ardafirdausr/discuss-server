@@ -41,10 +41,6 @@ func (ctrl DiscussionController) CreateDiscussion(c echo.Context) error {
 	return jsonResponse(c, http.StatusCreated, "Success", discussion)
 }
 
-func (ctrl DiscussionController) UploadDiscussionPhoto(c echo.Context) error {
-	return echo.ErrUnauthorized
-}
-
 func (ctrl DiscussionController) UpdateDiscussion(c echo.Context) error {
 	discussionID := c.Param("discussionId")
 	discussion, err := ctrl.ucs.DiscussionUsecase.GetDiscussionByID(discussionID)
@@ -85,6 +81,30 @@ func (ctrl DiscussionController) UpdateDiscussion(c echo.Context) error {
 	discussion.Name = param.Name
 	discussion.Description = param.Description
 	return jsonResponse(c, http.StatusOK, "Success", discussion)
+}
+
+func (ctrl DiscussionController) UpdateDiscussionPhoto(c echo.Context) error {
+	return echo.ErrInternalServerError
+}
+
+func (ctrl DiscussionController) UpdateDiscussionPassword(c echo.Context) error {
+	var param entity.UpdateDiscussionPassword
+	if err := c.Bind(&param); err != nil {
+		c.Logger().Error(err.Error())
+		return err
+	}
+
+	if err := c.Validate(&param); err != nil {
+		c.Logger().Error(err.Error())
+		return err
+	}
+
+	discussionId := c.Param("discussionId")
+	if err := ctrl.ucs.DiscussionUsecase.UpdatePassword(discussionId, param); err != nil {
+		return err
+	}
+
+	return jsonResponse(c, http.StatusOK, "Success", nil)
 }
 
 func (ctrl DiscussionController) DeleteDiscussion(c echo.Context) error {

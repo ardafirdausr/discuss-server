@@ -31,6 +31,8 @@ func (v *CustomValidator) Validate(i interface{}) error {
 				verr.Message = fmt.Sprintf("Min value of %s is %s", validationField, validationParam)
 			case "max":
 				verr.Message = fmt.Sprintf("Max value of %s is %s", validationField, validationParam)
+			case "eqfield":
+				verr.Message = fmt.Sprintf("Value of %s must be equal as %s", validationField, validationParam)
 			}
 		}
 

@@ -18,6 +18,8 @@ type DiscussionRepository interface {
 	GetDiscussionsByUserID(userID interface{}) ([]*entity.Discussion, error)
 	Create(param entity.CreateDiscussionParam) (*entity.Discussion, error)
 	UpdateByID(ID interface{}, param entity.UpdateDiscussionParam) error
+	UpdatePasswordByID(ID interface{}, password string) error
+	UpdatePhotoByID(ID interface{}, url string) error
 	DeleteByID(discussionID interface{}) error
 }
 

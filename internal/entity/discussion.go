@@ -19,7 +19,7 @@ type CreateDiscussionParam struct {
 	Code        string        `json:"code" validate:"required,min=4" bson:"code"`
 	Name        string        `json:"name" validate:"required,min=4" bson:"name"`
 	Description string        `json:"description" validate:"required,min=4" bson:"description"`
-	Password    *string       `json:"password,omitempty" bson:"password"`
+	Password    *string       `json:"-" bson:"password"`
 	CreatorID   interface{}   `bson:"creatorId" validate:"required"`
 	Members     []interface{} `bson:"members"`
 	CreatedAt   time.Time     `bson:"createdAt"`
@@ -31,4 +31,9 @@ type UpdateDiscussionParam struct {
 	Name        string    `json:"name,omitempty" validate:"min=4" bson:"name"`
 	Description string    `json:"description,omitempty" validate:"min=4" bson:"description"`
 	UpdatedAt   time.Time `bson:"updatedAt"`
+}
+
+type UpdateDiscussionPassword struct {
+	Password             string `json:"password" validate:"required"`
+	PasswordConfirmation string `json:"password_confirmation" validate:"required,eqfield=Password"`
 }

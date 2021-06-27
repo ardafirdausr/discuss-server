@@ -15,5 +15,7 @@ type DiscussionUsecase interface {
 	Create(param entity.CreateDiscussionParam) (*entity.Discussion, error)
 	SendMessage(discussionID interface{}, message entity.CreateMessage) (*entity.Message, error)
 	Update(discussionID interface{}, param entity.UpdateDiscussionParam) error
+	UpdatePassword(discussionID interface{}, param entity.UpdateDiscussionPassword) error
+	UpdatePhoto(discussionID interface{}, url string) error
 	Delete(discussionID interface{}) error
 }
