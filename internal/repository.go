@@ -22,9 +22,3 @@ type DiscussionRepository interface {
 	UpdatePhotoByID(ID interface{}, url string) error
 	DeleteByID(discussionID interface{}) error
 }
-
-type PubSubRepository interface {
-	Publish(channel string, message string) error
-	Subscribe(channels ...string) (<-chan interface{}, error)
-	Unsubscribe(channels ...string) error
-}

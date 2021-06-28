@@ -10,16 +10,10 @@ import (
 
 type DiscussionUsecase struct {
 	discussionRepo internal.DiscussionRepository
-	messageRepo    internal.MessageRepository
 }
 
-func NewDiscussionUsecase(
-	discussionRepo internal.DiscussionRepository,
-	messageRepo internal.MessageRepository) *DiscussionUsecase {
-	return &DiscussionUsecase{
-		discussionRepo: discussionRepo,
-		messageRepo:    messageRepo,
-	}
+func NewDiscussionUsecase(discussionRepo internal.DiscussionRepository) *DiscussionUsecase {
+	return &DiscussionUsecase{discussionRepo: discussionRepo}
 }
 
 func (du DiscussionUsecase) GetAllUserDiscussions(userID interface{}) ([]*entity.Discussion, error) {
@@ -52,16 +46,6 @@ func (du DiscussionUsecase) GetDiscussionByCode(code string) (*entity.Discussion
 	return discussion, nil
 }
 
-func (du DiscussionUsecase) GetDiscussionMessages(discussionID interface{}) ([]*entity.Message, error) {
-	messages, err := du.messageRepo.GetMessagesByDiscussionID(discussionID)
-	if err != nil {
-		log.Println(err.Error())
-		return nil, err
-	}
-
-	return messages, nil
-}
-
 func (du DiscussionUsecase) Create(param entity.CreateDiscussionParam) (*entity.Discussion, error) {
 	discussion, err := du.GetDiscussionByCode(param.Code)
 	_, isErrNF := err.(entity.ErrNotFound)
@@ -87,18 +71,6 @@ func (du DiscussionUsecase) Create(param entity.CreateDiscussionParam) (*entity.
 	}
 
 	return discussion, nil
-}
-
-func (du DiscussionUsecase) SendMessage(discussionID interface{}, param entity.CreateMessage) (*entity.Message, error) {
-	param.DiscussID = discussionID
-	param.CreatedAt = time.Now()
-	message, err := du.messageRepo.Create(param)
-	if err != nil {
-		log.Println(err.Error())
-		return nil, err
-	}
-
-	return message, nil
 }
 
 func (du DiscussionUsecase) Update(discussionID interface{}, param entity.UpdateDiscussionParam) error {

@@ -13,5 +13,8 @@ func main() {
 		log.Fatalf("Failed initiate the app\n%v", err)
 	}
 
+	// server
 	web.Start(app)
+	// ws.Start(app)
+	defer app.Close()
 }

@@ -3,16 +3,20 @@ package entity
 import "time"
 
 type Message struct {
-	ID        interface{} `json:"id"`
-	Content   string      `json:"content"`
-	SenderID  interface{} `json:"sender_id"`
-	DiscussID interface{} `json:"discuss_id"`
-	CreatedAt time.Time   `json:"created_at"`
+	ID           interface{} `json:"id" bson:"_id"`
+	ContentType  string      `json:"message_type" bson:"contentType"`
+	Content      string      `json:"content" bson:"content"`
+	ReceiverType string      `json:"receiver_type" bson:"receiverType"`
+	ReceiverID   interface{} `json:"receiver_id" bson:"receiverId"`
+	Sender       User        `json:"-" bson:"senderId"`
+	CreatedAt    time.Time   `json:"created_at" bson:"createdAt"`
 }
 
 type CreateMessage struct {
-	Content   string      `json:"content"`
-	SenderID  interface{} `json:"sender_id"`
-	DiscussID interface{} `json:"discuss_id"`
-	CreatedAt time.Time   `json:"created_at"`
+	ContentType  string      `json:"message_type" bson:"contentType"`
+	Content      string      `json:"content" bson:"content"`
+	ReceiverType string      `json:"receiver_type" bson:"receiverType"`
+	ReceiverID   interface{} `json:"receiver_id" bson:"receiverId"`
+	Sender       User        `json:"-" bson:"senderId"`
+	CreatedAt    time.Time   `json:"-" bson:"createdAt"`
 }

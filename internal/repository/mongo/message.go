@@ -26,11 +26,13 @@ func (mr MessageRepository) Create(param entity.CreateMessage) (*entity.Message,
 
 	objID := res.InsertedID.(primitive.ObjectID)
 	message := &entity.Message{
-		ID:        objID.Hex(),
-		Content:   param.Content,
-		SenderID:  param.SenderID,
-		DiscussID: param.DiscussID,
-		CreatedAt: param.CreatedAt,
+		ID:           objID.Hex(),
+		ContentType:  param.ContentType,
+		Content:      param.Content,
+		ReceiverType: param.ReceiverType,
+		ReceiverID:   param.ReceiverID,
+		Sender:       param.Sender,
+		CreatedAt:    param.CreatedAt,
 	}
 
 	return message, nil

@@ -1,14 +1,16 @@
 package app
 
 import (
+	"context"
 	"log"
 
 	"github.com/joho/godotenv"
 )
 
 type App struct {
-	repositories *Repositories
 	Usecases     *Usecases
+	Repositories *repositories
+	Drivers      *drivers
 }
 
 func New() (*App, error) {
@@ -21,12 +23,21 @@ func New() (*App, error) {
 		log.Fatalf("Failed to load .env  file \n%v", err)
 	}
 
-	repos, err := newRepositories()
+	drivers, err := newDrivers()
 	if err != nil {
-		log.Fatalln(err.Error())
+		log.Fatalln(err)
 	}
 
-	app.repositories = repos
-	app.Usecases = newUsecases(repos)
+	repos := newRepositories(app.Drivers)
+	ucs := newUsecases(app.Repositories)
+
+	app.Drivers = drivers
+	app.Repositories = repos
+	app.Usecases = ucs
 	return app, nil
+}
+
+func (app App) Close() {
+	app.Drivers.Mongo.Client().Disconnect(context.TODO())
+	app.Drivers.Redis.Close()
 }
