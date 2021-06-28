@@ -1,7 +1,6 @@
 package usecase
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 
@@ -11,7 +10,6 @@ import (
 
 type MessageUsecase struct {
 	messageRepo internal.MessageRepository
-	pubsub      *internal.PubSub
 }
 
 func NewMessageUsecase(messageRepo internal.MessageRepository) *MessageUsecase {
@@ -25,18 +23,15 @@ func (muc MessageUsecase) SendMessage(pubsub internal.PubSub, param entity.Creat
 		return nil, err
 	}
 
-	msgChannel := fmt.Sprintf("%s: %v", message.ReceiverType, message.ReceiverID)
-	msgPayload, err := json.Marshal(message)
-	if err == nil {
-		pubsub.Publish(msgChannel, msgPayload)
-		log.Println(err.Error())
-	}
+	msgChannel := fmt.Sprintf("%s/%v", message.ReceiverType, message.ReceiverID)
+	// msgPayload, err := json.Marshal(message)
+	// msgStr := string(msgPayload)
+	// fmt.Println(message, msgStr)
+	// if err == nil {
+	// 	log.Println(err.Error())
+	// 	pubsub.Publish(msgChannel, message)
+	// }
+	pubsub.Publish(msgChannel, []byte(message.Content))
 
 	return message, nil
-}
-
-func (muc MessageUsecase) ListenMessage(pubsub internal.PubSub) internal.SubscribeListener {
-	return func(channel string, message interface{}) error {
-		return nil
-	}
 }

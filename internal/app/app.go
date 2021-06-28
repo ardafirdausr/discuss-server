@@ -28,8 +28,8 @@ func New() (*App, error) {
 		log.Fatalln(err)
 	}
 
-	repos := newRepositories(app.Drivers)
-	ucs := newUsecases(app.Repositories)
+	repos := newRepositories(drivers)
+	ucs := newUsecases(repos)
 
 	app.Drivers = drivers
 	app.Repositories = repos
@@ -37,7 +37,18 @@ func New() (*App, error) {
 	return app, nil
 }
 
-func (app App) Close() {
-	app.Drivers.Mongo.Client().Disconnect(context.TODO())
-	app.Drivers.Redis.Close()
+func (app App) Close() error {
+	var rerr error
+
+	if err := app.Drivers.Mongo.Client().Disconnect(context.TODO()); err != nil {
+		log.Println("Failed to close Mongo DB connection")
+		rerr = err
+	}
+
+	if err := app.Drivers.Redis.Close(); err != nil {
+		log.Println("Failed to close Redis connection")
+		rerr = err
+	}
+
+	return rerr
 }

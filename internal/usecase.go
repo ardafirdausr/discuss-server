@@ -20,5 +20,4 @@ type DiscussionUsecase interface {
 
 type MessageUsecase interface {
 	SendMessage(pubsub PubSub, message entity.CreateMessage) (*entity.Message, error)
-	ListenMessage(pubsub PubSub) SubscribeListener
 }

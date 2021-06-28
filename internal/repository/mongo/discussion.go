@@ -156,7 +156,7 @@ func (dr DiscussionRepository) UpdateByID(ID interface{}, param entity.UpdateDis
 	if res.MatchedCount < 1 {
 		err = entity.ErrNotFound{
 			Message: "Discussion not found",
-			Err:     errors.New("Document not found"),
+			Err:     errors.New("document not found"),
 		}
 		return err
 	}
@@ -190,7 +190,7 @@ func (dr DiscussionRepository) UpdatePasswordByID(ID interface{}, password strin
 	if res.MatchedCount < 1 {
 		err = entity.ErrNotFound{
 			Message: "Discussion not found",
-			Err:     errors.New("Document not found"),
+			Err:     errors.New("document not found"),
 		}
 		return err
 	}
@@ -223,7 +223,7 @@ func (dr DiscussionRepository) UpdatePhotoByID(ID interface{}, url string) error
 	if res.MatchedCount < 1 {
 		err = entity.ErrNotFound{
 			Message: "Discussion not found",
-			Err:     errors.New("Document not found"),
+			Err:     errors.New("document not found"),
 		}
 		return err
 	}
@@ -257,7 +257,7 @@ func (dr DiscussionRepository) DeleteByID(discussionID interface{}) error {
 	if res.DeletedCount < 1 {
 		err = entity.ErrNotFound{
 			Message: "Discussion not found",
-			Err:     errors.New("Document not found"),
+			Err:     errors.New("document not found"),
 		}
 		return err
 	}

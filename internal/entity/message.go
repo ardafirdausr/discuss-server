@@ -4,7 +4,7 @@ import "time"
 
 type Message struct {
 	ID           interface{} `json:"id" bson:"_id"`
-	ContentType  string      `json:"message_type" bson:"contentType"`
+	ContentType  string      `json:"content_type" bson:"contentType"`
 	Content      string      `json:"content" bson:"content"`
 	ReceiverType string      `json:"receiver_type" bson:"receiverType"`
 	ReceiverID   interface{} `json:"receiver_id" bson:"receiverId"`
@@ -13,7 +13,7 @@ type Message struct {
 }
 
 type CreateMessage struct {
-	ContentType  string      `json:"message_type" bson:"contentType"`
+	ContentType  string      `json:"content_type" bson:"contentType"`
 	Content      string      `json:"content" bson:"content"`
 	ReceiverType string      `json:"receiver_type" bson:"receiverType"`
 	ReceiverID   interface{} `json:"receiver_id" bson:"receiverId"`

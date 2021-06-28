@@ -10,6 +10,7 @@ type SSOAuthenticator interface {
 
 type Tokenizer interface {
 	Generate(entity.TokenPayload) (string, error)
+	Parse(token string) (*entity.TokenPayload, error)
 }
 
 type PubSub interface {
@@ -20,4 +21,4 @@ type PubSub interface {
 	Close() error
 }
 
-type SubscribeListener func(channel string, message interface{}) error
+type SubscribeListener func(channel string, message interface{})

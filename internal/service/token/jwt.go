@@ -1,6 +1,7 @@
 package token
 
 import (
+	"errors"
 	"log"
 	"time"
 
@@ -29,4 +30,25 @@ func (JWTT JWTTokenizer) Generate(payload entity.TokenPayload) (string, error) {
 	}
 
 	return jwtToken, nil
+}
+
+func (JWTT JWTTokenizer) Parse(tokenString string) (*entity.TokenPayload, error) {
+	keyFunc := func(jwtToken *jwt.Token) (interface{}, error) {
+		return []byte(JWTT.secretKey), nil
+	}
+
+	claims := entity.JWTPayload{}
+	token, err := jwt.ParseWithClaims(tokenString, &claims, keyFunc)
+	if err != nil {
+		log.Println(err.Error())
+		return nil, err
+	}
+
+	if !token.Valid {
+		err = errors.New("invalid token")
+		log.Println(err.Error())
+		return nil, err
+	}
+
+	return &claims.TokenPayload, nil
 }

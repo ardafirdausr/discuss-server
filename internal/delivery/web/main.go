@@ -7,6 +7,7 @@ import (
 	"github.com/ardafirdausr/discuss-server/internal/delivery/web/controller"
 	"github.com/ardafirdausr/discuss-server/internal/delivery/web/middleware"
 	"github.com/ardafirdausr/discuss-server/internal/delivery/web/server"
+	"github.com/ardafirdausr/discuss-server/internal/delivery/ws"
 )
 
 func Start(app *app.App) {
@@ -26,6 +27,10 @@ func Start(app *app.App) {
 	discussionGroup.PUT("/:discussionId/password", discussionController.UpdateDiscussionPassword)
 	discussionGroup.PUT("/:discussionId", discussionController.UpdateDiscussion)
 	discussionGroup.DELETE("/:discussionId", discussionController.DeleteDiscussion)
+
+	dwc := ws.NewDiscussWebSocket(app)
+	wsGroup := web.Group("/ws")
+	wsGroup.GET("/chat", dwc.ChatSocketHandler)
 
 	server.Start(web)
 }
