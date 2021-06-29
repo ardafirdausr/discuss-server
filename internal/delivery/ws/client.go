@@ -30,13 +30,15 @@ func newSocketClient(user *entity.User, conn *websocket.Conn, pubsub internal.Pu
 func (wsc socketClient) Close() error {
 	var rerr error
 
-	if err := wsc.conn.Close(); err != nil {
-		log.Println("Failed to close websocket connection")
+	if err := wsc.pubsub.Close(); err != nil {
+		log.Println(err.Error())
+		log.Println("Failed to close subscription connection")
 		rerr = err
 	}
 
-	if err := wsc.pubsub.Close(); err != nil {
-		log.Println("Failed to close subscription connection")
+	if err := wsc.conn.Close(); err != nil {
+		log.Println(err.Error())
+		log.Println("Failed to close websocket connection")
 		rerr = err
 	}
 
