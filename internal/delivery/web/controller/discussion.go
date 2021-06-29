@@ -29,7 +29,7 @@ func (ctrl DiscussionController) CreateDiscussion(c echo.Context) error {
 	param.CreatorID = claims.ID
 
 	if err := c.Validate(&param); err != nil {
-		c.Logger().Error(err.Error())
+		log.Println(err.Error())
 		return err
 	}
 
@@ -65,7 +65,7 @@ func (ctrl DiscussionController) UpdateDiscussion(c echo.Context) error {
 	}
 
 	if err := c.Validate(&param); err != nil {
-		c.Logger().Error(err.Error())
+		log.Println(err.Error())
 		return err
 	}
 
@@ -90,12 +90,12 @@ func (ctrl DiscussionController) UpdateDiscussionPhoto(c echo.Context) error {
 func (ctrl DiscussionController) UpdateDiscussionPassword(c echo.Context) error {
 	var param entity.UpdateDiscussionPassword
 	if err := c.Bind(&param); err != nil {
-		c.Logger().Error(err.Error())
+		log.Println(err.Error())
 		return err
 	}
 
 	if err := c.Validate(&param); err != nil {
-		c.Logger().Error(err.Error())
+		log.Println(err.Error())
 		return err
 	}
 

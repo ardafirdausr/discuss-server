@@ -94,7 +94,7 @@ func (dws DiscussWebSocket) authenticate(tokenizer internal.Tokenizer, strToken 
 }
 
 func (dws DiscussWebSocket) ChatSocketHandler(c echo.Context) error {
-	wsLogger := log.New(log.Writer(), "Websocket: ", log.Ldate|log.Ltime)
+	wsLogger := log.New(log.Writer(), "/ws/chat ", log.Ldate|log.Ltime|log.Lmsgprefix)
 	conn, err := upgrader.Upgrade(c.Response(), c.Request(), nil)
 	if err != nil {
 		log.Fatal("websocket conn failed", err)

@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"log"
 	"net/http"
 	"os"
 
@@ -22,7 +23,7 @@ func NewAuthController(ucs *app.Usecases) *AuthController {
 func (ctrl AuthController) Login(c echo.Context) error {
 	googleAuth := entity.GoogleAuth{}
 	if err := c.Bind(&googleAuth); err != nil {
-		c.Logger().Error(err.Error())
+		log.Println(err.Error())
 		return echo.ErrInternalServerError
 	}
 
@@ -30,7 +31,7 @@ func (ctrl AuthController) Login(c echo.Context) error {
 	googleAuthenticator := auth.NewGoogleSSOAuthenticator(googleSSOClientID)
 	user, err := ctrl.ucs.AuthUsecase.SSO(googleAuth.TokenID, googleAuthenticator)
 	if err != nil {
-		c.Logger().Error(err.Error())
+		log.Println(err.Error())
 		return err
 	}
 
@@ -38,7 +39,7 @@ func (ctrl AuthController) Login(c echo.Context) error {
 	JWTToknizer := token.NewJWTTokenizer(JWTSecretKey)
 	JWTToken, err := ctrl.ucs.AuthUsecase.GenerateAuthToken(*user, JWTToknizer)
 	if err != nil {
-		c.Logger().Error(err.Error())
+		log.Println(err.Error())
 		return err
 	}
 
