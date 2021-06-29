@@ -64,6 +64,8 @@ func (du DiscussionUsecase) Create(param entity.CreateDiscussionParam) (*entity.
 	param.CreatedAt = time.Now()
 	param.UpdatedAt = time.Now()
 	param.Members = make([]interface{}, 0)
+	param.Members = append(param.Members, param.CreatorID)
+
 	discussion, err = du.discussionRepo.Create(param)
 	if err != nil {
 		log.Println(err.Error())

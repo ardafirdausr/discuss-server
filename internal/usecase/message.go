@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 
@@ -23,15 +24,14 @@ func (muc MessageUsecase) SendMessage(pubsub internal.PubSub, param entity.Creat
 		return nil, err
 	}
 
+	msgEvt := entity.NewMessageSent(*message)
 	msgChannel := fmt.Sprintf("%s/%v", message.ReceiverType, message.ReceiverID)
-	// msgPayload, err := json.Marshal(message)
-	// msgStr := string(msgPayload)
-	// fmt.Println(message, msgStr)
-	// if err == nil {
-	// 	log.Println(err.Error())
-	// 	pubsub.Publish(msgChannel, message)
-	// }
-	pubsub.Publish(msgChannel, []byte(message.Content))
+	msgPayload, err := json.Marshal(msgEvt)
+	if err != nil {
+		log.Println(err.Error())
+		return nil, err
+	}
 
+	pubsub.Publish(msgChannel, msgPayload)
 	return message, nil
 }

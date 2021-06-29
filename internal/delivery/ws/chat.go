@@ -6,7 +6,6 @@ import (
 	"log"
 	"os"
 
-	"github.com/ardafirdausr/discuss-server/internal"
 	"github.com/ardafirdausr/discuss-server/internal/entity"
 	"github.com/ardafirdausr/discuss-server/internal/service/pubsub"
 	"github.com/ardafirdausr/discuss-server/internal/service/token"
@@ -48,53 +47,32 @@ func (dws DiscussWebSocket) listenSubscribeMessage(sc *socketClient) {
 			return
 		}
 
-		var message entity.Message
-		if err := json.Unmarshal([]byte(strMsg), &message); err != nil {
-			err := errors.New("failed convert channel message to message object")
-			log.Println(err.Error())
-			return
-		}
+		// var message entity.Message
+		// if err := json.Unmarshal([]byte(strMsg), &message); err != nil {
+		// 	err := errors.New("failed convert channel message to message object")
+		// 	log.Println(err.Error())
+		// 	return
+		// }
 
-		if message.ReceiverType == "user" && sc.user.ID != message.ReceiverID {
-			err := errors.New("wrong receiver")
-			log.Println(err.Error())
-			return
-		}
+		// if message.ReceiverType == "user" && sc.user.ID != message.ReceiverID {
+		// 	err := errors.New("wrong receiver")
+		// 	log.Println(err.Error())
+		// 	return
+		// }
 
-		if message.ReceiverType == "discussion" && sc.user.Discussions == nil {
-			err := errors.New("wrong receiver")
-			log.Println(err.Error())
-			return
-		}
+		// if message.ReceiverType == "discussion" && sc.user.Discussions == nil {
+		// 	err := errors.New("wrong receiver")
+		// 	log.Println(err.Error())
+		// 	return
+		// }
 
 		sc.conn.WriteMessage(websocket.TextMessage, []byte(strMsg))
 	}
 	sc.pubsub.Listen(listener)
 }
 
-func (dws DiscussWebSocket) authenticate(tokenizer internal.Tokenizer, strToken string) (*entity.User, error) {
-	if strToken == "" {
-		return nil, errors.New("token is not provided")
-	}
-
-	payload, err := tokenizer.Parse(strToken)
-	if err != nil {
-		log.Println(err.Error())
-		return nil, errors.New("invalid token")
-	}
-
-	user := &entity.User{
-		ID:       payload.ID,
-		Name:     payload.Name,
-		Email:    payload.Email,
-		ImageUrl: payload.Imageurl,
-	}
-
-	return user, nil
-}
-
 func (dws DiscussWebSocket) ChatSocketHandler(c echo.Context) error {
-	wsLogger := log.New(log.Writer(), "/ws/chat ", log.Ldate|log.Ltime|log.Lmsgprefix)
+	wsLogger := log.New(log.Writer(), "SOCKET /ws/chat ", log.Ldate|log.Ltime|log.Lmsgprefix)
 	conn, err := upgrader.Upgrade(c.Response(), c.Request(), nil)
 	if err != nil {
 		log.Fatal("websocket conn failed", err)
@@ -117,6 +95,7 @@ func (dws DiscussWebSocket) ChatSocketHandler(c echo.Context) error {
 		wsLogger.Printf("%s disconnected from the chat socket \n", user.Email)
 	}()
 
+	sc.pubsub.Subscribe("user/test")
 	wsLogger.Printf("%s connected to the chat socket \n", user.Email)
 	go dws.listenSubscribeMessage(sc)
 	for {

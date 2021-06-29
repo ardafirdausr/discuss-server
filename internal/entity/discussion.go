@@ -4,7 +4,7 @@ import "time"
 
 type Discussion struct {
 	ID          interface{}   `json:"id" bson:"_id"`
-	Code        string        `json:"string" bson:"code"`
+	Code        string        `json:"code" bson:"code"`
 	Name        string        `json:"name" bson:"name"`
 	Description string        `json:"description" bson:"description"`
 	Password    *string       `json:"-" bson:"password"`

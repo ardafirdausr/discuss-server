@@ -111,6 +111,27 @@ func (dr DiscussionRepository) GetDiscussionsByUserID(userID interface{}) ([]*en
 }
 
 func (dr DiscussionRepository) Create(param entity.CreateDiscussionParam) (*entity.Discussion, error) {
+	strObjID := param.CreatorID.(string)
+	objID, err := primitive.ObjectIDFromHex(strObjID)
+	if err != nil {
+		log.Println(err.Error())
+		return nil, err
+	}
+	param.CreatorID = objID
+
+	var objMemberIDs []interface{}
+	for _, memberID := range param.Members {
+		memberIDStr := memberID.(string)
+		objmemberID, err := primitive.ObjectIDFromHex(memberIDStr)
+		if err != nil {
+			log.Println(err.Error())
+			return nil, err
+		}
+
+		objMemberIDs = append(objMemberIDs, objmemberID)
+	}
+	param.Members = objMemberIDs
+
 	res, err := dr.DB.Collection("discussions").InsertOne(context.TODO(), param)
 	if err != nil {
 		log.Println(err.Error())

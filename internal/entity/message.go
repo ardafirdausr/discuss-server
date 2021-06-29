@@ -8,7 +8,7 @@ type Message struct {
 	Content      string      `json:"content" bson:"content"`
 	ReceiverType string      `json:"receiver_type" bson:"receiverType"`
 	ReceiverID   interface{} `json:"receiver_id" bson:"receiverId"`
-	Sender       User        `json:"-" bson:"senderId"`
+	Sender       User        `json:"sender" bson:"senderId"`
 	CreatedAt    time.Time   `json:"created_at" bson:"createdAt"`
 }
 
