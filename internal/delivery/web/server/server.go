@@ -37,7 +37,7 @@ func New() *echo.Echo {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 	e.Use(echoMiddleware.Secure())
-	e.Use(echoMiddleware.CORS())
+	e.Use(middleware.CORS())
 	return e
 }
 
