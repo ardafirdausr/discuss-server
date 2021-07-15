@@ -88,8 +88,10 @@ func (dr DiscussionRepository) GetDiscussionsByUserID(userID interface{}) ([]*en
 		return nil, err
 	}
 
+	matchStage := bson.M{"$match": bson.M{"members": objID}}
+	lookupStage := bson.M{"$lookup": bson.M{"from": "users", "localField": "members", "foreignField": "_id", "as": "members"}}
 	ctx := context.TODO()
-	csr, err := dr.DB.Collection("discussions").Find(ctx, bson.M{"members.id": objID})
+	csr, err := dr.DB.Collection("discussions").Aggregate(context.TODO(), []bson.M{matchStage, lookupStage})
 	if err != nil {
 		log.Println(err.Error())
 		return nil, err

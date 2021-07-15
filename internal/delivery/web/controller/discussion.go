@@ -18,6 +18,19 @@ func NewDiscussionController(ucs *app.Usecases) *DiscussionController {
 	return &DiscussionController{ucs: ucs}
 }
 
+func (ctrl DiscussionController) GetUserDiscussions(c echo.Context) error {
+	token := c.Get("user").(*jwt.Token)
+	claims := token.Claims.(*entity.JWTPayload)
+	userID := claims.ID
+
+	discussions, err := ctrl.ucs.DiscussionUsecase.GetAllUserDiscussions(userID)
+	if err != nil {
+		return err
+	}
+
+	return jsonResponse(c, http.StatusOK, "Success", discussions)
+}
+
 func (ctrl DiscussionController) CreateDiscussion(c echo.Context) error {
 	var param entity.CreateDiscussionParam
 	if err := c.Bind(&param); err != nil {
