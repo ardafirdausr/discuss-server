@@ -46,7 +46,7 @@ func (dr DiscussionRepository) GetDiscussionsByID(discussionID interface{}) (*en
 	return &discussion, nil
 }
 
-func (dr DiscussionRepository) GetDiscussionsByCode(code string) (*entity.Discussion, error) {
+func (dr DiscussionRepository) GetDiscussionByCode(code string) (*entity.Discussion, error) {
 	ctx := context.TODO()
 	res := dr.DB.Collection("discussions").FindOne(ctx, bson.M{"code": code})
 	if res.Err() == mongo.ErrNoDocuments {

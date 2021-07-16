@@ -38,7 +38,7 @@ func (du DiscussionUsecase) GetDiscussionByID(discussionID interface{}) (*entity
 
 func (du DiscussionUsecase) GetDiscussionByCode(code string) (*entity.Discussion, error) {
 
-	discussion, err := du.discussionRepo.GetDiscussionsByCode(code)
+	discussion, err := du.discussionRepo.GetDiscussionByCode(code)
 	if err != nil {
 		log.Println(err.Error())
 		return nil, err

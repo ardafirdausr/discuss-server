@@ -14,7 +14,7 @@ type MessageRepository interface {
 
 type DiscussionRepository interface {
 	GetDiscussionsByID(discussionID interface{}) (*entity.Discussion, error)
-	GetDiscussionsByCode(code string) (*entity.Discussion, error)
+	GetDiscussionByCode(code string) (*entity.Discussion, error)
 	GetDiscussionsByUserID(userID interface{}) ([]*entity.Discussion, error)
 	Create(param entity.CreateDiscussionParam) (*entity.Discussion, error)
 	AddMember(discussionID interface{}, userID interface{}) error
