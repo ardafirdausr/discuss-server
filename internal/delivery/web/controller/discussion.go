@@ -54,6 +54,34 @@ func (ctrl DiscussionController) CreateDiscussion(c echo.Context) error {
 	return jsonResponse(c, http.StatusCreated, "Success", discussion)
 }
 
+func (ctrl DiscussionController) JoinDiscussion(c echo.Context) error {
+	token := c.Get("user").(*jwt.Token)
+	claims := token.Claims.(*entity.JWTPayload)
+	userID := claims.ID
+	discussionID := c.Param("discussionId")
+
+	discussion, err := ctrl.ucs.DiscussionUsecase.JoinDiscussion(discussionID, userID)
+	if err != nil {
+		return err
+	}
+
+	return jsonResponse(c, http.StatusOK, "Success", discussion)
+}
+
+func (ctrl DiscussionController) LeaveDiscussion(c echo.Context) error {
+	token := c.Get("user").(*jwt.Token)
+	claims := token.Claims.(*entity.JWTPayload)
+	userID := claims.ID
+	discussionID := c.Param("discussionId")
+
+	err := ctrl.ucs.DiscussionUsecase.LeaveDiscussion(discussionID, userID)
+	if err != nil {
+		return err
+	}
+
+	return jsonResponse(c, http.StatusOK, "Success", nil)
+}
+
 func (ctrl DiscussionController) UpdateDiscussion(c echo.Context) error {
 	discussionID := c.Param("discussionId")
 	discussion, err := ctrl.ucs.DiscussionUsecase.GetDiscussionByID(discussionID)

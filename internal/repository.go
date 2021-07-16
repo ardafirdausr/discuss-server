@@ -13,12 +13,14 @@ type MessageRepository interface {
 }
 
 type DiscussionRepository interface {
-	GetDiscussionsByID(ID interface{}) (*entity.Discussion, error)
+	GetDiscussionsByID(discussionID interface{}) (*entity.Discussion, error)
 	GetDiscussionsByCode(code string) (*entity.Discussion, error)
 	GetDiscussionsByUserID(userID interface{}) ([]*entity.Discussion, error)
 	Create(param entity.CreateDiscussionParam) (*entity.Discussion, error)
-	UpdateByID(ID interface{}, param entity.UpdateDiscussionParam) error
-	UpdatePasswordByID(ID interface{}, password string) error
-	UpdatePhotoByID(ID interface{}, url string) error
+	AddMember(discussionID interface{}, userID interface{}) error
+	RemoveMember(discussionID interface{}, userID interface{}) error
+	UpdateByID(discussionID interface{}, param entity.UpdateDiscussionParam) error
+	UpdatePasswordByID(discussionID interface{}, password string) error
+	UpdatePhotoByID(discussionID interface{}, url string) error
 	DeleteByID(discussionID interface{}) error
 }

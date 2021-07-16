@@ -19,15 +19,10 @@ func NewDiscussionRepository(DB *mongo.Database) *DiscussionRepository {
 	return &DiscussionRepository{DB: DB}
 }
 
-func (dr DiscussionRepository) GetDiscussionsByID(ID interface{}) (*entity.Discussion, error) {
-	strID := ID.(string)
-	objID, err := primitive.ObjectIDFromHex(strID)
+func (dr DiscussionRepository) GetDiscussionsByID(discussionID interface{}) (*entity.Discussion, error) {
+	objID, err := toObjectID(discussionID)
 	if err != nil {
 		log.Println(err.Error())
-		err = entity.ErrNotFound{
-			Message: "Discussion not found",
-			Err:     err,
-		}
 		return nil, err
 	}
 
@@ -73,18 +68,9 @@ func (dr DiscussionRepository) GetDiscussionsByCode(code string) (*entity.Discus
 }
 
 func (dr DiscussionRepository) GetDiscussionsByUserID(userID interface{}) ([]*entity.Discussion, error) {
-	strUserID, ok := userID.(string)
-	if !ok {
-		err := entity.ErrNotFound{Message: "Invalid ID"}
-		return nil, err
-	}
-
-	objID, err := primitive.ObjectIDFromHex(strUserID)
+	objID, err := toObjectID(userID)
 	if err != nil {
-		err = entity.ErrNotFound{
-			Message: "Failed get data using the corresponding ID",
-			Err:     err,
-		}
+		log.Println(err.Error())
 		return nil, err
 	}
 
@@ -113,14 +99,13 @@ func (dr DiscussionRepository) GetDiscussionsByUserID(userID interface{}) ([]*en
 }
 
 func (dr DiscussionRepository) Create(param entity.CreateDiscussionParam) (*entity.Discussion, error) {
-	strObjID := param.CreatorID.(string)
-	objID, err := primitive.ObjectIDFromHex(strObjID)
+	objID, err := toObjectID(param.CreatorID)
 	if err != nil {
 		log.Println(err.Error())
 		return nil, err
 	}
-	param.CreatorID = objID
 
+	param.CreatorID = objID
 	var objMemberIDs []interface{}
 	for _, memberID := range param.Members {
 		memberIDStr := memberID.(string)
@@ -154,19 +139,72 @@ func (dr DiscussionRepository) Create(param entity.CreateDiscussionParam) (*enti
 	return discussion, nil
 }
 
-func (dr DiscussionRepository) UpdateByID(ID interface{}, param entity.UpdateDiscussionParam) error {
-	strID, ok := ID.(string)
-	if !ok {
-		err := entity.ErrNotFound{Message: "Invalid ID"}
+func (dr DiscussionRepository) AddMember(discussionID, userID interface{}) error {
+	discussionObjID, err := toObjectID(discussionID)
+	if err != nil {
+		log.Println(err.Error())
 		return err
 	}
 
-	objID, err := primitive.ObjectIDFromHex(strID)
+	userObjID, err := toObjectID(userID)
 	if err != nil {
+		log.Println(err.Error())
+		return err
+	}
+
+	ctx := context.TODO()
+	res, err := dr.DB.Collection("discussions").UpdateByID(ctx, discussionObjID, bson.M{"$addToSet": bson.M{"members": userObjID}})
+	if err != nil {
+		log.Println(err.Error())
+		return err
+	}
+
+	if res.MatchedCount < 1 {
 		err = entity.ErrNotFound{
-			Message: "Failed get data using the corresponding ID",
-			Err:     err,
+			Message: "Discussion not found",
+			Err:     errors.New("document not found"),
 		}
+		return err
+	}
+
+	return nil
+}
+
+func (dr DiscussionRepository) RemoveMember(discussionID, userID interface{}) error {
+	discussionObjID, err := toObjectID(discussionID)
+	if err != nil {
+		log.Println(err.Error())
+		return err
+	}
+
+	userObjID, err := toObjectID(userID)
+	if err != nil {
+		log.Println(err.Error())
+		return err
+	}
+
+	ctx := context.TODO()
+	res, err := dr.DB.Collection("discussions").UpdateByID(ctx, discussionObjID, bson.M{"$pull": bson.M{"members": userObjID}})
+	if err != nil {
+		log.Println(err.Error())
+		return err
+	}
+
+	if res.MatchedCount < 1 {
+		err = entity.ErrNotFound{
+			Message: "Discussion not found",
+			Err:     errors.New("document not found"),
+		}
+		return err
+	}
+
+	return nil
+}
+
+func (dr DiscussionRepository) UpdateByID(discussionID interface{}, param entity.UpdateDiscussionParam) error {
+	objID, err := toObjectID(discussionID)
+	if err != nil {
+		log.Println(err.Error())
 		return err
 	}
 
@@ -187,19 +225,10 @@ func (dr DiscussionRepository) UpdateByID(ID interface{}, param entity.UpdateDis
 	return nil
 }
 
-func (dr DiscussionRepository) UpdatePasswordByID(ID interface{}, password string) error {
-	strID, ok := ID.(string)
-	if !ok {
-		err := entity.ErrNotFound{Message: "Invalid ID"}
-		return err
-	}
-
-	objID, err := primitive.ObjectIDFromHex(strID)
+func (dr DiscussionRepository) UpdatePasswordByID(discussionID interface{}, password string) error {
+	objID, err := toObjectID(discussionID)
 	if err != nil {
-		err = entity.ErrNotFound{
-			Message: "Failed get data using the corresponding ID",
-			Err:     err,
-		}
+		log.Println(err.Error())
 		return err
 	}
 
@@ -221,21 +250,13 @@ func (dr DiscussionRepository) UpdatePasswordByID(ID interface{}, password strin
 	return nil
 }
 
-func (dr DiscussionRepository) UpdatePhotoByID(ID interface{}, url string) error {
-	strID, ok := ID.(string)
-	if !ok {
-		err := entity.ErrNotFound{Message: "Invalid ID"}
+func (dr DiscussionRepository) UpdatePhotoByID(discussionID interface{}, url string) error {
+	objID, err := toObjectID(discussionID)
+	if err != nil {
+		log.Println(err.Error())
 		return err
 	}
 
-	objID, err := primitive.ObjectIDFromHex(strID)
-	if err != nil {
-		err = entity.ErrNotFound{
-			Message: "Failed get data using the corresponding ID",
-			Err:     err,
-		}
-		return err
-	}
 	data := bson.M{"photoUrl": url}
 	res, err := dr.DB.Collection("discussions").UpdateByID(context.TODO(), objID, bson.M{"$set": data})
 	if err != nil {
@@ -255,18 +276,9 @@ func (dr DiscussionRepository) UpdatePhotoByID(ID interface{}, url string) error
 }
 
 func (dr DiscussionRepository) DeleteByID(discussionID interface{}) error {
-	strDiscussionID, ok := discussionID.(string)
-	if !ok {
-		err := entity.ErrNotFound{Message: "Invalid ID"}
-		return err
-	}
-
-	objID, err := primitive.ObjectIDFromHex(strDiscussionID)
+	objID, err := toObjectID(discussionID)
 	if err != nil {
-		err = entity.ErrNotFound{
-			Message: "Failed get data using the corresponding ID",
-			Err:     err,
-		}
+		log.Println(err.Error())
 		return err
 	}
 

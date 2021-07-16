@@ -26,8 +26,8 @@ func (du DiscussionUsecase) GetAllUserDiscussions(userID interface{}) ([]*entity
 	return discussions, nil
 }
 
-func (du DiscussionUsecase) GetDiscussionByID(ID interface{}) (*entity.Discussion, error) {
-	discussion, err := du.discussionRepo.GetDiscussionsByID(ID)
+func (du DiscussionUsecase) GetDiscussionByID(discussionID interface{}) (*entity.Discussion, error) {
+	discussion, err := du.discussionRepo.GetDiscussionsByID(discussionID)
 	if err != nil {
 		log.Println(err.Error())
 		return nil, err
@@ -37,6 +37,7 @@ func (du DiscussionUsecase) GetDiscussionByID(ID interface{}) (*entity.Discussio
 }
 
 func (du DiscussionUsecase) GetDiscussionByCode(code string) (*entity.Discussion, error) {
+
 	discussion, err := du.discussionRepo.GetDiscussionsByCode(code)
 	if err != nil {
 		log.Println(err.Error())
@@ -73,6 +74,26 @@ func (du DiscussionUsecase) Create(param entity.CreateDiscussionParam) (*entity.
 	}
 
 	return discussion, nil
+}
+
+func (du DiscussionUsecase) JoinDiscussion(discussionID, userID interface{}) (*entity.Discussion, error) {
+	err := du.discussionRepo.AddMember(discussionID, userID)
+	if err != nil {
+		log.Println(err.Error())
+		return nil, err
+	}
+
+	return du.GetDiscussionByID(discussionID)
+}
+
+func (du DiscussionUsecase) LeaveDiscussion(discussionID, userID interface{}) error {
+	err := du.discussionRepo.RemoveMember(discussionID, userID)
+	if err != nil {
+		log.Println(err.Error())
+		return err
+	}
+
+	return nil
 }
 
 func (du DiscussionUsecase) Update(discussionID interface{}, param entity.UpdateDiscussionParam) error {

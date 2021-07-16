@@ -9,9 +9,11 @@ type AuthUsecase interface {
 
 type DiscussionUsecase interface {
 	GetAllUserDiscussions(userID interface{}) ([]*entity.Discussion, error)
-	GetDiscussionByID(ID interface{}) (*entity.Discussion, error)
+	GetDiscussionByID(discussionID interface{}) (*entity.Discussion, error)
 	GetDiscussionByCode(code string) (*entity.Discussion, error)
 	Create(param entity.CreateDiscussionParam) (*entity.Discussion, error)
+	JoinDiscussion(discussionID interface{}, userID interface{}) (*entity.Discussion, error)
+	LeaveDiscussion(discussionID interface{}, userID interface{}) error
 	Update(discussionID interface{}, param entity.UpdateDiscussionParam) error
 	UpdatePassword(discussionID interface{}, param entity.UpdateDiscussionPassword) error
 	UpdatePhoto(discussionID interface{}, url string) error
