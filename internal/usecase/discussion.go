@@ -93,6 +93,19 @@ func (du DiscussionUsecase) LeaveDiscussion(discussionID, userID interface{}) er
 		return err
 	}
 
+	discussion, err := du.discussionRepo.GetDiscussionsByID(discussionID)
+	if err != nil {
+		log.Println(err.Error())
+		return err
+	}
+
+	if len(discussion.Members) < 1 {
+		err := du.discussionRepo.DeleteByID(discussionID)
+		if err != nil {
+			log.Println(err.Error())
+		}
+	}
+
 	return nil
 }
 
