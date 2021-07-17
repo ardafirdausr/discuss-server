@@ -20,7 +20,7 @@ func New() (*App, error) {
 
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatalf("Failed to load .env  file \n%v", err)
+		log.Printf("Failed to load .env  file \n%v", err)
 	}
 
 	drivers, err := newDrivers()
