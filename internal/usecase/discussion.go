@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"time"
@@ -66,6 +67,10 @@ func (du DiscussionUsecase) Create(param entity.CreateDiscussionParam) (*entity.
 
 	param.CreatedAt = time.Now()
 	param.UpdatedAt = time.Now()
+	if param.Password != nil && len(*param.Password) > 0 {
+		hashedPass := hashString(*param.Password)
+		param.Password = &hashedPass
+	}
 
 	discussion, err = du.discussionRepo.Create(param)
 	if err != nil {
@@ -77,7 +82,30 @@ func (du DiscussionUsecase) Create(param entity.CreateDiscussionParam) (*entity.
 }
 
 func (du DiscussionUsecase) JoinDiscussion(param entity.JoinDiscussionParam) (*entity.Discussion, error) {
-	err := du.discussionRepo.AddMember(param.Code, param.UserID)
+	discussion, err := du.GetDiscussionByCode(param.Code)
+	if err != nil {
+		return nil, err
+	}
+
+	errInvalid := entity.ErrInvalidData{
+		Message: "Invalid discussion code or password",
+		Err:     errors.New("Invalid discussion code or password"),
+	}
+
+	withPass := discussion.Password != nil
+	hasPass := param.Password != nil && len(*param.Password) > 0
+	if withPass && !hasPass {
+		return nil, errInvalid
+	}
+
+	if withPass && hasPass {
+		hashedPass := hashString(*param.Password)
+		if *discussion.Password != hashedPass {
+			return nil, errInvalid
+		}
+	}
+
+	err = du.discussionRepo.AddMember(param.Code, param.UserID)
 	if err != nil {
 		log.Println(err.Error())
 		return nil, err
