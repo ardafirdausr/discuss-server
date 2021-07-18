@@ -55,12 +55,22 @@ func (ctrl DiscussionController) CreateDiscussion(c echo.Context) error {
 }
 
 func (ctrl DiscussionController) JoinDiscussion(c echo.Context) error {
+	var param entity.JoinDiscussionParam
+	if err := c.Bind(&param); err != nil {
+		log.Println(err.Error())
+		return echo.ErrInternalServerError
+	}
+
 	token := c.Get("user").(*jwt.Token)
 	claims := token.Claims.(*entity.JWTPayload)
-	userID := claims.ID
-	discussionID := c.Param("discussionId")
+	param.UserID = claims.ID
 
-	discussion, err := ctrl.ucs.DiscussionUsecase.JoinDiscussion(discussionID, userID)
+	if err := c.Validate(&param); err != nil {
+		log.Println(err.Error())
+		return err
+	}
+
+	discussion, err := ctrl.ucs.DiscussionUsecase.JoinDiscussion(param)
 	if err != nil {
 		return err
 	}

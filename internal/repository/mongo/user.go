@@ -6,8 +6,26 @@ import (
 
 	"github.com/ardafirdausr/discuss-server/internal/entity"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
+
+type userModel struct {
+	ID          primitive.ObjectID   `bson:"_id,omitempty"`
+	Name        string               `bson:"name,omitempty"`
+	Email       string               `bson:"email,omitempty"`
+	ImageUrl    string               `bson:"imageUrl,omitempty"`
+	Discussions []primitive.ObjectID `bson:"Discussions,omitempty"`
+}
+
+func (um *userModel) ToUser() *entity.User {
+	return &entity.User{
+		ID:       um.ID,
+		Name:     um.Name,
+		Email:    um.Email,
+		ImageUrl: um.ImageUrl,
+	}
+}
 
 type UserRepository struct {
 	DB *mongo.Database
@@ -18,7 +36,7 @@ func NewUserRepository(DB *mongo.Database) *UserRepository {
 }
 
 func (ur UserRepository) GetUserByEmail(email string) (*entity.User, error) {
-	var user entity.User
+	var userModel userModel
 	res := ur.DB.Collection("users").FindOne(context.TODO(), bson.M{"email": email})
 	if res.Err() == mongo.ErrNoDocuments {
 		log.Println(res.Err())
@@ -29,26 +47,27 @@ func (ur UserRepository) GetUserByEmail(email string) (*entity.User, error) {
 		return nil, err
 	}
 
-	if err := res.Decode(&user); err != nil {
+	if err := res.Decode(&userModel); err != nil {
 		log.Println(err.Error())
 		return nil, err
 	}
 
-	return &user, nil
+	return userModel.ToUser(), nil
 }
 
 func (ur UserRepository) Create(param entity.CreateUserParam) (*entity.User, error) {
-	res, err := ur.DB.Collection("users").InsertOne(context.TODO(), param)
+	userModel := userModel{
+		Email:    param.Email,
+		Name:     param.Name,
+		ImageUrl: param.ImageUrl,
+	}
+
+	res, err := ur.DB.Collection("users").InsertOne(context.TODO(), userModel)
 	if err != nil {
 		log.Println(err.Error())
 		return nil, err
 	}
 
-	user := &entity.User{
-		ID:       res.InsertedID,
-		Email:    param.Email,
-		Name:     param.Name,
-		ImageUrl: param.ImageUrl,
-	}
-	return user, nil
+	userModel.ID = res.InsertedID.(primitive.ObjectID)
+	return userModel.ToUser(), nil
 }

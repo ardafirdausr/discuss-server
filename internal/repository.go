@@ -17,7 +17,7 @@ type DiscussionRepository interface {
 	GetDiscussionByCode(code string) (*entity.Discussion, error)
 	GetDiscussionsByUserID(userID interface{}) ([]*entity.Discussion, error)
 	Create(param entity.CreateDiscussionParam) (*entity.Discussion, error)
-	AddMember(discussionID interface{}, userID interface{}) error
+	AddMember(code string, userID interface{}) error
 	RemoveMember(discussionID interface{}, userID interface{}) error
 	UpdateByID(discussionID interface{}, param entity.UpdateDiscussionParam) error
 	UpdatePasswordByID(discussionID interface{}, password string) error

@@ -12,7 +12,7 @@ type DiscussionUsecase interface {
 	GetDiscussionByID(discussionID interface{}) (*entity.Discussion, error)
 	GetDiscussionByCode(code string) (*entity.Discussion, error)
 	Create(param entity.CreateDiscussionParam) (*entity.Discussion, error)
-	JoinDiscussion(discussionID interface{}, userID interface{}) (*entity.Discussion, error)
+	JoinDiscussion(param entity.JoinDiscussionParam) (*entity.Discussion, error)
 	LeaveDiscussion(discussionID interface{}, userID interface{}) error
 	Update(discussionID interface{}, param entity.UpdateDiscussionParam) error
 	UpdatePassword(discussionID interface{}, param entity.UpdateDiscussionPassword) error

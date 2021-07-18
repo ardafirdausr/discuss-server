@@ -3,11 +3,25 @@ package mongo
 import (
 	"context"
 	"log"
+	"time"
 
 	"github.com/ardafirdausr/discuss-server/internal/entity"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
+
+type messageModel struct {
+	ID           interface{} `bson:"_id"`
+	ContentType  string      `bson:"contentType"`
+	Content      string      `bson:"content"`
+	ReceiverType string      `bson:"receiverType"`
+	ReceiverID   interface{} `bson:"receiverId"`
+	Sender       userModel   `bson:"sender"`
+	CreatedAt    time.Time   `bson:"createdAt"`
+}
+
+func (mm *messageModel) toMessage() {
+}
 
 type MessageRepository struct {
 	DB *mongo.Database

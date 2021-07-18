@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"fmt"
 	"log"
 	"time"
 
@@ -48,6 +49,7 @@ func (du DiscussionUsecase) GetDiscussionByCode(code string) (*entity.Discussion
 }
 
 func (du DiscussionUsecase) Create(param entity.CreateDiscussionParam) (*entity.Discussion, error) {
+	fmt.Printf("%#v", param)
 	discussion, err := du.GetDiscussionByCode(param.Code)
 	_, isErrNF := err.(entity.ErrNotFound)
 	if err != nil && !isErrNF {
@@ -64,8 +66,6 @@ func (du DiscussionUsecase) Create(param entity.CreateDiscussionParam) (*entity.
 
 	param.CreatedAt = time.Now()
 	param.UpdatedAt = time.Now()
-	param.Members = make([]interface{}, 0)
-	param.Members = append(param.Members, param.CreatorID)
 
 	discussion, err = du.discussionRepo.Create(param)
 	if err != nil {
@@ -76,14 +76,14 @@ func (du DiscussionUsecase) Create(param entity.CreateDiscussionParam) (*entity.
 	return discussion, nil
 }
 
-func (du DiscussionUsecase) JoinDiscussion(discussionID, userID interface{}) (*entity.Discussion, error) {
-	err := du.discussionRepo.AddMember(discussionID, userID)
+func (du DiscussionUsecase) JoinDiscussion(param entity.JoinDiscussionParam) (*entity.Discussion, error) {
+	err := du.discussionRepo.AddMember(param.Code, param.UserID)
 	if err != nil {
 		log.Println(err.Error())
 		return nil, err
 	}
 
-	return du.GetDiscussionByID(discussionID)
+	return du.GetDiscussionByCode(param.Code)
 }
 
 func (du DiscussionUsecase) LeaveDiscussion(discussionID, userID interface{}) error {

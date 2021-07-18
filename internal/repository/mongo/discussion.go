@@ -3,7 +3,9 @@ package mongo
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
+	"time"
 
 	"github.com/ardafirdausr/discuss-server/internal/entity"
 	"go.mongodb.org/mongo-driver/bson"
@@ -11,12 +13,80 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
+type discussionModel struct {
+	ID          primitive.ObjectID   `bson:"_id,omitempty"`
+	Code        string               `bson:"code,omitempty"`
+	Name        string               `bson:"name,omitempty"`
+	Description string               `bson:"description,omitempty"`
+	Password    *string              `bson:"password,omitempty"`
+	PhotoUrl    *string              `bson:"photoUrl,omitempty"`
+	CreatorID   primitive.ObjectID   `bson:"creatorId,omitempty"`
+	MemberIDs   []primitive.ObjectID `bson:"memberIds,omitempty"`
+	CreatedAt   time.Time            `bson:"createdAt,omitempty"`
+	UpdatedAt   time.Time            `bson:"updatedAt,omitempty"`
+
+	Members  []*userModel    `bson:"members,omitempty"`
+	Messages []*messageModel `bson:"messages,omitempty"`
+}
+
+func (dm *discussionModel) toDiscussion() *entity.Discussion {
+	discussion := &entity.Discussion{
+		ID:          dm.ID,
+		Code:        dm.Code,
+		Name:        dm.Name,
+		Description: dm.Description,
+		Password:    dm.Password,
+		PhotoUrl:    dm.PhotoUrl,
+		CreatorID:   dm.CreatorID,
+		CreatedAt:   dm.CreatedAt,
+		UpdatedAt:   dm.UpdatedAt,
+	}
+
+	if len(dm.Members) > 0 {
+		var users []*entity.User
+		for _, userModel := range dm.Members {
+			users = append(users, userModel.ToUser())
+		}
+
+		discussion.Members = users
+	}
+
+	return discussion
+}
+
 type DiscussionRepository struct {
 	DB *mongo.Database
 }
 
 func NewDiscussionRepository(DB *mongo.Database) *DiscussionRepository {
 	return &DiscussionRepository{DB: DB}
+}
+
+func (dr DiscussionRepository) loadMembers(model *discussionModel) error {
+	if len(model.MemberIDs) < 1 {
+		return nil
+	}
+
+	ctx := context.TODO()
+	csr, err := dr.DB.Collection("users").Find(ctx, bson.M{"_id": bson.M{"$in": model.MemberIDs}})
+	if err != nil {
+		log.Println(err.Error())
+		return err
+	}
+	defer csr.Close(ctx)
+
+	model.Members = make([]*userModel, 0)
+	for csr.Next(ctx) {
+		var userModel userModel
+		if err := csr.Decode(&userModel); err == nil {
+			model.Members = append(model.Members, &userModel)
+			continue
+		}
+
+		log.Println(err.Error())
+	}
+
+	return nil
 }
 
 func (dr DiscussionRepository) GetDiscussionsByID(discussionID interface{}) (*entity.Discussion, error) {
@@ -37,13 +107,17 @@ func (dr DiscussionRepository) GetDiscussionsByID(discussionID interface{}) (*en
 		return nil, err
 	}
 
-	var discussion entity.Discussion
-	if err := res.Decode(&discussion); err != nil {
+	var model discussionModel
+	if err := res.Decode(&model); err != nil {
 		log.Println(err.Error())
 		return nil, err
 	}
 
-	return &discussion, nil
+	if err := dr.loadMembers(&model); err != nil {
+		log.Println(err.Error())
+		return nil, err
+	}
+	return model.toDiscussion(), nil
 }
 
 func (dr DiscussionRepository) GetDiscussionByCode(code string) (*entity.Discussion, error) {
@@ -58,13 +132,17 @@ func (dr DiscussionRepository) GetDiscussionByCode(code string) (*entity.Discuss
 		return nil, err
 	}
 
-	var discussion entity.Discussion
-	if err := res.Decode(&discussion); err != nil {
+	var model discussionModel
+	if err := res.Decode(&model); err != nil {
 		log.Println(err.Error())
 		return nil, err
 	}
 
-	return &discussion, nil
+	if err := dr.loadMembers(&model); err != nil {
+		log.Println(err.Error())
+		return nil, err
+	}
+	return model.toDiscussion(), nil
 }
 
 func (dr DiscussionRepository) GetDiscussionsByUserID(userID interface{}) ([]*entity.Discussion, error) {
@@ -74,8 +152,8 @@ func (dr DiscussionRepository) GetDiscussionsByUserID(userID interface{}) ([]*en
 		return nil, err
 	}
 
-	matchStage := bson.M{"$match": bson.M{"members": objID}}
-	lookupStage := bson.M{"$lookup": bson.M{"from": "users", "localField": "members", "foreignField": "_id", "as": "members"}}
+	matchStage := bson.M{"$match": bson.M{"memberIds": objID}}
+	lookupStage := bson.M{"$lookup": bson.M{"from": "users", "localField": "memberIds", "foreignField": "_id", "as": "members"}}
 	ctx := context.TODO()
 	csr, err := dr.DB.Collection("discussions").Aggregate(context.TODO(), []bson.M{matchStage, lookupStage})
 	if err != nil {
@@ -84,68 +162,54 @@ func (dr DiscussionRepository) GetDiscussionsByUserID(userID interface{}) ([]*en
 	}
 	defer csr.Close(ctx)
 
-	discussions := make([]*entity.Discussion, 0)
+	var discussions []*entity.Discussion
 	for csr.Next(ctx) {
-		var discussion entity.Discussion
-		if err := csr.Decode(&discussion); err == nil {
-			discussions = append(discussions, &discussion)
+		var discussionModel discussionModel
+		if err := csr.Decode(&discussionModel); err == nil {
+			discussion := discussionModel.toDiscussion()
+			discussions = append(discussions, discussion)
 			continue
 		}
 
 		log.Println(err.Error())
 	}
 
+	fmt.Printf("%#v", discussions)
 	return discussions, nil
 }
 
 func (dr DiscussionRepository) Create(param entity.CreateDiscussionParam) (*entity.Discussion, error) {
-	objID, err := toObjectID(param.CreatorID)
+	creatorObjID, err := toObjectID(param.CreatorID)
 	if err != nil {
 		log.Println(err.Error())
 		return nil, err
 	}
 
-	param.CreatorID = objID
-	var objMemberIDs []interface{}
-	for _, memberID := range param.Members {
-		memberIDStr := memberID.(string)
-		objmemberID, err := primitive.ObjectIDFromHex(memberIDStr)
-		if err != nil {
-			log.Println(err.Error())
-			return nil, err
-		}
-
-		objMemberIDs = append(objMemberIDs, objmemberID)
-	}
-	param.Members = objMemberIDs
-
-	res, err := dr.DB.Collection("discussions").InsertOne(context.TODO(), param)
-	if err != nil {
-		log.Println(err.Error())
-		return nil, err
-	}
-
-	discussion := &entity.Discussion{
-		ID:          res.InsertedID,
+	model := discussionModel{
 		Code:        param.Code,
 		Name:        param.Name,
 		Description: param.Description,
-		PhotoUrl:    nil,
-		CreatorID:   param.CreatorID,
+		Password:    param.Password,
+		CreatorID:   creatorObjID,
+		MemberIDs:   []primitive.ObjectID{creatorObjID},
 		CreatedAt:   param.CreatedAt,
 		UpdatedAt:   param.UpdatedAt,
 	}
-
-	return discussion, nil
-}
-
-func (dr DiscussionRepository) AddMember(discussionID, userID interface{}) error {
-	discussionObjID, err := toObjectID(discussionID)
+	res, err := dr.DB.Collection("discussions").InsertOne(context.TODO(), model)
 	if err != nil {
 		log.Println(err.Error())
-		return err
+		return nil, err
 	}
 
+	model.ID = res.InsertedID.(primitive.ObjectID)
+	if err := dr.loadMembers(&model); err != nil {
+		log.Println(err.Error())
+		return nil, err
+	}
+	return model.toDiscussion(), nil
+}
+
+func (dr DiscussionRepository) AddMember(code string, userID interface{}) error {
 	userObjID, err := toObjectID(userID)
 	if err != nil {
 		log.Println(err.Error())
@@ -153,7 +217,9 @@ func (dr DiscussionRepository) AddMember(discussionID, userID interface{}) error
 	}
 
 	ctx := context.TODO()
-	res, err := dr.DB.Collection("discussions").UpdateByID(ctx, discussionObjID, bson.M{"$addToSet": bson.M{"members": userObjID}})
+	filter := bson.M{"code": code}
+	update := bson.M{"$addToSet": bson.M{"memberIds": userObjID}}
+	res, err := dr.DB.Collection("discussions").UpdateOne(ctx, filter, update)
 	if err != nil {
 		log.Println(err.Error())
 		return err
@@ -184,7 +250,7 @@ func (dr DiscussionRepository) RemoveMember(discussionID, userID interface{}) er
 	}
 
 	ctx := context.TODO()
-	res, err := dr.DB.Collection("discussions").UpdateByID(ctx, discussionObjID, bson.M{"$pull": bson.M{"members": userObjID}})
+	res, err := dr.DB.Collection("discussions").UpdateByID(ctx, discussionObjID, bson.M{"$pull": bson.M{"memberIds": userObjID}})
 	if err != nil {
 		log.Println(err.Error())
 		return err
@@ -202,13 +268,20 @@ func (dr DiscussionRepository) RemoveMember(discussionID, userID interface{}) er
 }
 
 func (dr DiscussionRepository) UpdateByID(discussionID interface{}, param entity.UpdateDiscussionParam) error {
-	objID, err := toObjectID(discussionID)
+	discussionObjID, err := toObjectID(discussionID)
 	if err != nil {
 		log.Println(err.Error())
 		return err
 	}
 
-	res, err := dr.DB.Collection("discussions").UpdateByID(context.TODO(), objID, bson.M{"$set": param})
+	model := discussionModel{
+		Code:        param.Code,
+		Name:        param.Name,
+		Description: param.Description,
+		UpdatedAt:   param.UpdatedAt,
+	}
+	update := bson.M{"$set": model}
+	res, err := dr.DB.Collection("discussions").UpdateByID(context.TODO(), discussionObjID, update)
 	if err != nil {
 		log.Println(err.Error())
 		return err
@@ -226,14 +299,14 @@ func (dr DiscussionRepository) UpdateByID(discussionID interface{}, param entity
 }
 
 func (dr DiscussionRepository) UpdatePasswordByID(discussionID interface{}, password string) error {
-	objID, err := toObjectID(discussionID)
+	discussionObjID, err := toObjectID(discussionID)
 	if err != nil {
 		log.Println(err.Error())
 		return err
 	}
 
 	data := bson.M{"password": password}
-	res, err := dr.DB.Collection("discussions").UpdateByID(context.TODO(), objID, bson.M{"$set": data})
+	res, err := dr.DB.Collection("discussions").UpdateByID(context.TODO(), discussionObjID, bson.M{"$set": data})
 	if err != nil {
 		log.Println(err.Error())
 		return err
@@ -251,14 +324,14 @@ func (dr DiscussionRepository) UpdatePasswordByID(discussionID interface{}, pass
 }
 
 func (dr DiscussionRepository) UpdatePhotoByID(discussionID interface{}, url string) error {
-	objID, err := toObjectID(discussionID)
+	discussionObjID, err := toObjectID(discussionID)
 	if err != nil {
 		log.Println(err.Error())
 		return err
 	}
 
 	data := bson.M{"photoUrl": url}
-	res, err := dr.DB.Collection("discussions").UpdateByID(context.TODO(), objID, bson.M{"$set": data})
+	res, err := dr.DB.Collection("discussions").UpdateByID(context.TODO(), discussionObjID, bson.M{"$set": data})
 	if err != nil {
 		log.Println(err.Error())
 		return err
@@ -276,14 +349,14 @@ func (dr DiscussionRepository) UpdatePhotoByID(discussionID interface{}, url str
 }
 
 func (dr DiscussionRepository) DeleteByID(discussionID interface{}) error {
-	objID, err := toObjectID(discussionID)
+	discussionObjID, err := toObjectID(discussionID)
 	if err != nil {
 		log.Println(err.Error())
 		return err
 	}
 
 	ctx := context.TODO()
-	res, err := dr.DB.Collection("discussions").DeleteOne(ctx, bson.M{"_id": objID})
+	res, err := dr.DB.Collection("discussions").DeleteOne(ctx, bson.M{"_id": discussionObjID})
 	if err != nil {
 		log.Println(err.Error())
 		return err

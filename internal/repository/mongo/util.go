@@ -6,6 +6,10 @@ import (
 )
 
 func toObjectID(ID interface{}) (primitive.ObjectID, error) {
+	if objID, ok := ID.(primitive.ObjectID); ok {
+		return objID, nil
+	}
+
 	strID, ok := ID.(string)
 	if !ok {
 		err := entity.ErrNotFound{Message: "Invalid ID"}
