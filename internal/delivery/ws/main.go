@@ -19,7 +19,7 @@ func NewDiscussWebSocket(app *app.App) *DiscussWebSocket {
 }
 
 func (dws DiscussWebSocket) authenticate(tokenizer internal.Tokenizer, strToken string) (*entity.User, error) {
-	if strToken == "" {
+	if len(strToken) < 1 {
 		return nil, errors.New("token is not provided")
 	}
 

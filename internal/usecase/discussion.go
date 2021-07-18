@@ -89,7 +89,7 @@ func (du DiscussionUsecase) JoinDiscussion(param entity.JoinDiscussionParam) (*e
 
 	errInvalid := entity.ErrInvalidData{
 		Message: "Invalid discussion code or password",
-		Err:     errors.New("Invalid discussion code or password"),
+		Err:     errors.New("invalid discussion code or password"),
 	}
 
 	withPass := discussion.Password != nil
