@@ -25,10 +25,10 @@ type Message struct {
 }
 
 type CreateMessage struct {
-	ContentType  MessageContentType  `json:"content_type" bson:"contentType"`
-	Content      string              `json:"content" bson:"content"`
-	ReceiverType MessageReceiverType `json:"receiver_type" bson:"receiverType"`
-	ReceiverID   interface{}         `json:"receiver_id" bson:"receiverId"`
+	ContentType  MessageContentType  `json:"content_type"`
+	Content      string              `json:"content"`
+	ReceiverType MessageReceiverType `json:"receiver_type"`
+	ReceiverID   interface{}         `json:"receiver_id"`
 	Sender       User                `json:"-"`
 	CreatedAt    time.Time           `json:"-"`
 }

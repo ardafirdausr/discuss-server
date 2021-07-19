@@ -193,6 +193,7 @@ func (dr DiscussionRepository) Create(param entity.CreateDiscussionParam) (*enti
 		CreatedAt:   param.CreatedAt,
 		UpdatedAt:   param.UpdatedAt,
 	}
+
 	res, err := dr.DB.Collection("discussions").InsertOne(context.TODO(), model)
 	if err != nil {
 		log.Println(err.Error())
@@ -204,10 +205,24 @@ func (dr DiscussionRepository) Create(param entity.CreateDiscussionParam) (*enti
 		log.Println(err.Error())
 		return nil, err
 	}
+
+	update := bson.M{"$addToSet": bson.M{"discussionIds": model.ID}}
+	_, err = dr.DB.Collection("users").UpdateByID(context.TODO(), creatorObjID, update)
+	if err != nil {
+		log.Println(err.Error())
+		return nil, err
+	}
+
 	return model.toDiscussion(), nil
 }
 
-func (dr DiscussionRepository) AddMember(code string, userID interface{}) error {
+func (dr DiscussionRepository) AddMember(discussionID interface{}, userID interface{}) error {
+	discussionObjID, err := toObjectID(discussionID)
+	if err != nil {
+		log.Println(err.Error())
+		return err
+	}
+
 	userObjID, err := toObjectID(userID)
 	if err != nil {
 		log.Println(err.Error())
@@ -215,9 +230,23 @@ func (dr DiscussionRepository) AddMember(code string, userID interface{}) error 
 	}
 
 	ctx := context.TODO()
-	filter := bson.M{"code": code}
 	update := bson.M{"$addToSet": bson.M{"memberIds": userObjID}}
-	res, err := dr.DB.Collection("discussions").UpdateOne(ctx, filter, update)
+	res, err := dr.DB.Collection("discussions").UpdateByID(ctx, discussionObjID, update)
+	if err != nil {
+		log.Println(err.Error())
+		return err
+	}
+
+	if res.MatchedCount < 1 {
+		err = entity.ErrNotFound{
+			Message: "Discussion not found",
+			Err:     errors.New("document not found"),
+		}
+		return err
+	}
+
+	update = bson.M{"$addToSet": bson.M{"discussionIds": discussionObjID}}
+	res, err = dr.DB.Collection("users").UpdateByID(context.TODO(), userObjID, update)
 	if err != nil {
 		log.Println(err.Error())
 		return err

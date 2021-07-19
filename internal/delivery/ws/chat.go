@@ -93,10 +93,6 @@ func (dws DiscussWebSocket) ChatSocketHandler(c echo.Context) error {
 		discussionChannel := fmt.Sprintf("%s/%v", entity.MessageReceiverDiscussion, discussion.ID)
 		discussionChannels = append(discussionChannels, discussionChannel)
 	}
-	fmt.Println("WWWWWWWWWWWWWWWWWWWWWWWWW")
-	fmt.Printf("%#v\n", user)
-	fmt.Printf("%#v\n", discussionChannels)
-	fmt.Println("WWWWWWWWWWWWWWWWWWWWWWWWW")
 	sc.pubsub.Subscribe(discussionChannels...)
 
 	wsLogger.Printf("%s connected to the chat socket \n", user.Email)

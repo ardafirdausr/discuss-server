@@ -103,7 +103,7 @@ func (du DiscussionUsecase) JoinDiscussion(param entity.JoinDiscussionParam) (*e
 		}
 	}
 
-	err = du.discussionRepo.AddMember(param.Code, param.UserID)
+	err = du.discussionRepo.AddMember(discussion.ID, param.UserID)
 	if err != nil {
 		log.Println(err.Error())
 		return nil, err

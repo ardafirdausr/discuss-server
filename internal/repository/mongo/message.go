@@ -11,16 +11,27 @@ import (
 )
 
 type messageModel struct {
-	ID           interface{}                `bson:"_id"`
-	ContentType  entity.MessageContentType  `bson:"contentType"`
-	Content      string                     `bson:"content"`
-	ReceiverType entity.MessageReceiverType `bson:"receiverType"`
-	ReceiverID   interface{}                `bson:"receiverId"`
-	Sender       userModel                  `bson:"sender"`
-	CreatedAt    time.Time                  `bson:"createdAt"`
+	ID           primitive.ObjectID         `bson:"_id,omitempty"`
+	ContentType  entity.MessageContentType  `bson:"contentType,omitempty"`
+	Content      string                     `bson:"content,omitempty"`
+	ReceiverType entity.MessageReceiverType `bson:"receiverType,omitempty"`
+	ReceiverID   primitive.ObjectID         `bson:"receiverId,omitempty"`
+	Sender       userModel                  `bson:"sender,omitempty"`
+	CreatedAt    time.Time                  `bson:"createdAt,omitempty"`
 }
 
-func (mm *messageModel) toMessage() {
+func (mm *messageModel) toMessage() *entity.Message {
+	message := &entity.Message{
+		ID:           mm.ID.Hex(),
+		ContentType:  mm.ContentType,
+		Content:      mm.Content,
+		ReceiverType: mm.ReceiverType,
+		ReceiverID:   mm.ReceiverID.Hex(),
+		Sender:       *mm.Sender.ToUser(),
+		CreatedAt:    mm.CreatedAt,
+	}
+
+	return message
 }
 
 type MessageRepository struct {
@@ -32,24 +43,42 @@ func NewMessageRepository(DB *mongo.Database) *MessageRepository {
 }
 
 func (mr MessageRepository) Create(param entity.CreateMessage) (*entity.Message, error) {
-	res, err := mr.DB.Collection("messages").InsertOne(context.TODO(), param)
+
+	senderObjID, err := toObjectID(param.Sender.ID)
+	if err != nil {
+		log.Println(err.Error())
+		return nil, err
+	}
+	userModel := userModel{
+		ID:       senderObjID,
+		Name:     param.Sender.Name,
+		Email:    param.Sender.Email,
+		ImageUrl: param.Sender.ImageUrl,
+	}
+
+	receiverObjID, err := toObjectID(param.ReceiverID)
+	if err != nil {
+		log.Println(err.Error())
+		return nil, err
+	}
+	messageModel := &messageModel{
+		ContentType:  param.ContentType,
+		Content:      param.Content,
+		ReceiverType: param.ReceiverType,
+		ReceiverID:   receiverObjID,
+		Sender:       userModel,
+		CreatedAt:    param.CreatedAt,
+	}
+
+	res, err := mr.DB.Collection("messages").InsertOne(context.TODO(), messageModel)
 	if err != nil {
 		log.Println(err.Error())
 		return nil, err
 	}
 
-	objID := res.InsertedID.(primitive.ObjectID)
-	message := &entity.Message{
-		ID:           objID.Hex(),
-		ContentType:  param.ContentType,
-		Content:      param.Content,
-		ReceiverType: param.ReceiverType,
-		ReceiverID:   param.ReceiverID,
-		Sender:       param.Sender,
-		CreatedAt:    param.CreatedAt,
-	}
+	messageModel.ID = res.InsertedID.(primitive.ObjectID)
 
-	return message, nil
+	return messageModel.toMessage(), nil
 }
 
 func (mr MessageRepository) GetMessagesByDiscussionID(discussionID interface{}) ([]*entity.Message, error) {

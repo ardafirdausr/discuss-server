@@ -27,9 +27,6 @@ func (muc MessageUsecase) SendMessage(pubsub internal.PubSub, param entity.Creat
 	}
 
 	msgChannel := fmt.Sprintf("%s/%v", message.ReceiverType, message.ReceiverID)
-	fmt.Println("WWWWWWWWWWWWWWWWWWWWWWWWW")
-	fmt.Println(msgChannel)
-	fmt.Println("WWWWWWWWWWWWWWWWWWWWWWWWW")
 	msgPayload, err := json.Marshal(&message)
 	if err != nil {
 		log.Println(err.Error())
