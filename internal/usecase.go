@@ -4,6 +4,7 @@ import "github.com/ardafirdausr/discuss-server/internal/entity"
 
 type AuthUsecase interface {
 	SSO(token string, authenticator SSOAuthenticator) (*entity.User, error)
+	GetUserFromToken(token string, tokenizer Tokenizer) (*entity.User, error)
 	GenerateAuthToken(user entity.User, tokenizer Tokenizer) (string, error)
 }
 

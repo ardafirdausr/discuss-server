@@ -3,7 +3,6 @@ package mongo
 import (
 	"context"
 	"errors"
-	"fmt"
 	"log"
 	"time"
 
@@ -31,7 +30,7 @@ type discussionModel struct {
 
 func (dm *discussionModel) toDiscussion() *entity.Discussion {
 	discussion := &entity.Discussion{
-		ID:          dm.ID,
+		ID:          dm.ID.Hex(),
 		Code:        dm.Code,
 		Name:        dm.Name,
 		Description: dm.Description,
@@ -174,7 +173,6 @@ func (dr DiscussionRepository) GetDiscussionsByUserID(userID interface{}) ([]*en
 		log.Println(err.Error())
 	}
 
-	fmt.Printf("%#v", discussions)
 	return discussions, nil
 }
 

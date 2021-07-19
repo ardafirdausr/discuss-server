@@ -11,13 +11,13 @@ import (
 )
 
 type messageModel struct {
-	ID           interface{} `bson:"_id"`
-	ContentType  string      `bson:"contentType"`
-	Content      string      `bson:"content"`
-	ReceiverType string      `bson:"receiverType"`
-	ReceiverID   interface{} `bson:"receiverId"`
-	Sender       userModel   `bson:"sender"`
-	CreatedAt    time.Time   `bson:"createdAt"`
+	ID           interface{}                `bson:"_id"`
+	ContentType  entity.MessageContentType  `bson:"contentType"`
+	Content      string                     `bson:"content"`
+	ReceiverType entity.MessageReceiverType `bson:"receiverType"`
+	ReceiverID   interface{}                `bson:"receiverId"`
+	Sender       userModel                  `bson:"sender"`
+	CreatedAt    time.Time                  `bson:"createdAt"`
 }
 
 func (mm *messageModel) toMessage() {

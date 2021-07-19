@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"errors"
-	"fmt"
 	"log"
 	"time"
 
@@ -50,7 +49,6 @@ func (du DiscussionUsecase) GetDiscussionByCode(code string) (*entity.Discussion
 }
 
 func (du DiscussionUsecase) Create(param entity.CreateDiscussionParam) (*entity.Discussion, error) {
-	fmt.Printf("%#v", param)
 	discussion, err := du.GetDiscussionByCode(param.Code)
 	_, isErrNF := err.(entity.ErrNotFound)
 	if err != nil && !isErrNF {

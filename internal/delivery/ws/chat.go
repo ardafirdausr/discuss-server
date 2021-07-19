@@ -3,6 +3,7 @@ package ws
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
 	"os"
 
@@ -47,24 +48,16 @@ func (dws DiscussWebSocket) listenSubscribeMessage(sc *socketClient) {
 			return
 		}
 
-		// var message entity.Message
-		// if err := json.Unmarshal([]byte(strMsg), &message); err != nil {
-		// 	err := errors.New("failed convert channel message to message object")
-		// 	log.Println(err.Error())
-		// 	return
-		// }
+		var message entity.Message
+		if err := json.Unmarshal([]byte(strMsg), &message); err != nil {
+			err := errors.New("failed convert channel message to message object")
+			log.Println(err.Error())
+			return
+		}
 
-		// if message.ReceiverType == "user" && sc.user.ID != message.ReceiverID {
-		// 	err := errors.New("wrong receiver")
-		// 	log.Println(err.Error())
-		// 	return
-		// }
-
-		// if message.ReceiverType == "discussion" && sc.user.Discussions == nil {
-		// 	err := errors.New("wrong receiver")
-		// 	log.Println(err.Error())
-		// 	return
-		// }
+		if message.Sender.ID == sc.user.ID {
+			return
+		}
 
 		sc.conn.WriteMessage(websocket.TextMessage, []byte(strMsg))
 	}
@@ -81,7 +74,7 @@ func (dws DiscussWebSocket) ChatSocketHandler(c echo.Context) error {
 	strToken := c.QueryParam("token")
 	JWTSecretKey := os.Getenv("JWT_SECRET_KEY")
 	JWTToknizer := token.NewJWTTokenizer(JWTSecretKey)
-	user, err := dws.authenticate(JWTToknizer, strToken)
+	user, err := dws.app.Usecases.AuthUsecase.GetUserFromToken(strToken, JWTToknizer)
 	if err != nil {
 		log.Println(err.Error())
 		conn.WriteMessage(websocket.CloseMessage, []byte("Invalid token"))
@@ -95,7 +88,17 @@ func (dws DiscussWebSocket) ChatSocketHandler(c echo.Context) error {
 		wsLogger.Printf("%s disconnected from the chat socket \n", user.Email)
 	}()
 
-	sc.pubsub.Subscribe("user/test")
+	var discussionChannels []string
+	for _, discussion := range user.Discussions {
+		discussionChannel := fmt.Sprintf("%s/%v", entity.MessageReceiverDiscussion, discussion.ID)
+		discussionChannels = append(discussionChannels, discussionChannel)
+	}
+	fmt.Println("WWWWWWWWWWWWWWWWWWWWWWWWW")
+	fmt.Printf("%#v\n", user)
+	fmt.Printf("%#v\n", discussionChannels)
+	fmt.Println("WWWWWWWWWWWWWWWWWWWWWWWWW")
+	sc.pubsub.Subscribe(discussionChannels...)
+
 	wsLogger.Printf("%s connected to the chat socket \n", user.Email)
 	go dws.listenSubscribeMessage(sc)
 	for {
