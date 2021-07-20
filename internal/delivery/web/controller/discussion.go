@@ -3,6 +3,7 @@ package controller
 import (
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/ardafirdausr/discuss-server/internal/app"
 	"github.com/ardafirdausr/discuss-server/internal/entity"
@@ -29,6 +30,21 @@ func (ctrl DiscussionController) GetUserDiscussions(c echo.Context) error {
 	}
 
 	return jsonResponse(c, http.StatusOK, "Success", discussions)
+}
+
+func (ctrl DiscussionController) GetPaginatedMessages(c echo.Context) error {
+	discussionID := c.Param("discussionId")
+	querySize := c.QueryParam("size")
+	size, _ := strconv.Atoi(querySize)
+	queryPage := c.QueryParam("page")
+	page, _ := strconv.Atoi(queryPage)
+	messages, err := ctrl.ucs.MessageUsecase.GetMessagesByDiscussionID(discussionID, size, page)
+	if err != nil {
+		log.Println(err.Error())
+		return err
+	}
+
+	return jsonResponse(c, http.StatusOK, "Success", messages)
 }
 
 func (ctrl DiscussionController) CreateDiscussion(c echo.Context) error {

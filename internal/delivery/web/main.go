@@ -22,6 +22,7 @@ func Start(app *app.App) {
 
 	discussionController := controller.NewDiscussionController(app.Usecases)
 	discussionGroup := web.Group("/discussions", JWTmiddleware)
+	discussionGroup.GET("/:discussionId/messages", discussionController.GetPaginatedMessages)
 	discussionGroup.GET("", discussionController.GetUserDiscussions)
 	discussionGroup.POST("/join", discussionController.JoinDiscussion)
 	discussionGroup.POST("/:discussionId/invite", discussionController.JoinDiscussion)

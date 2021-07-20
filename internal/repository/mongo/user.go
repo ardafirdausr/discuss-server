@@ -63,12 +63,12 @@ func (ur UserRepository) loadDiscussions(um *userModel) error {
 
 	for csr.Next(ctx) {
 		var discussionModel discussionModel
-		if err := csr.Decode(&discussionModel); err == nil {
-			um.Discussions = append(um.Discussions, &discussionModel)
+		if err := csr.Decode(&discussionModel); err != nil {
+			log.Println(err.Error())
 			continue
 		}
 
-		log.Println(err.Error())
+		um.Discussions = append(um.Discussions, &discussionModel)
 	}
 
 	return nil

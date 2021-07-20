@@ -6,8 +6,10 @@ import (
 	"time"
 
 	"github.com/ardafirdausr/discuss-server/internal/entity"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type messageModel struct {
@@ -81,6 +83,39 @@ func (mr MessageRepository) Create(param entity.CreateMessage) (*entity.Message,
 	return messageModel.toMessage(), nil
 }
 
-func (mr MessageRepository) GetMessagesByDiscussionID(discussionID interface{}) ([]*entity.Message, error) {
-	return nil, nil
+func (mr MessageRepository) GetPaginatedMessagesByDiscussionID(discussionID interface{}, size int, page int) ([]*entity.Message, error) {
+	discussionObjID, err := toObjectID(discussionID)
+	if err != nil {
+		log.Println(err.Error())
+		return nil, err
+	}
+
+	ctx := context.TODO()
+	filter := bson.M{"receiverType": "message.receiver.discussion", "receiverId": discussionObjID}
+	skip := int64(size * (page - 1))
+	limit := int64(size)
+	options := &options.FindOptions{}
+	options.SetLimit(limit)
+	options.SetSkip(skip)
+	options.SetSort(bson.M{"createdAt": -1})
+	csr, err := mr.DB.Collection("messages").Find(ctx, filter, options)
+	if err != nil {
+		log.Println(err.Error())
+		return nil, err
+	}
+	defer csr.Close(ctx)
+
+	var messages []*entity.Message
+	for csr.Next(ctx) {
+		var messageModel messageModel
+		if err := csr.Decode(&messageModel); err != nil {
+			log.Println(err.Error())
+			continue
+		}
+
+		messages = append(messages, messageModel.toMessage())
+	}
+	log.Println(messages)
+
+	return messages, nil
 }

@@ -22,5 +22,6 @@ type DiscussionUsecase interface {
 }
 
 type MessageUsecase interface {
+	GetMessagesByDiscussionID(discussionID interface{}, size, page int) ([]*entity.Message, error)
 	SendMessage(pubsub PubSub, message entity.CreateMessage) (*entity.Message, error)
 }

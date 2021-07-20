@@ -10,7 +10,7 @@ type UserRepository interface {
 
 type MessageRepository interface {
 	Create(param entity.CreateMessage) (*entity.Message, error)
-	GetMessagesByDiscussionID(discussionID interface{}) ([]*entity.Message, error)
+	GetPaginatedMessagesByDiscussionID(discussionID interface{}, size, page int) ([]*entity.Message, error)
 }
 
 type DiscussionRepository interface {

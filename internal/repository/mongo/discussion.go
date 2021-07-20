@@ -78,11 +78,11 @@ func (dr DiscussionRepository) loadMembers(model *discussionModel) error {
 	for csr.Next(ctx) {
 		var userModel userModel
 		if err := csr.Decode(&userModel); err == nil {
-			model.Members = append(model.Members, &userModel)
+			log.Println(err.Error())
 			continue
 		}
 
-		log.Println(err.Error())
+		model.Members = append(model.Members, &userModel)
 	}
 
 	return nil
@@ -164,13 +164,13 @@ func (dr DiscussionRepository) GetDiscussionsByUserID(userID interface{}) ([]*en
 	var discussions []*entity.Discussion
 	for csr.Next(ctx) {
 		var discussionModel discussionModel
-		if err := csr.Decode(&discussionModel); err == nil {
-			discussion := discussionModel.toDiscussion()
-			discussions = append(discussions, discussion)
+		if err := csr.Decode(&discussionModel); err != nil {
+			log.Println(err.Error())
 			continue
 		}
 
-		log.Println(err.Error())
+		discussion := discussionModel.toDiscussion()
+		discussions = append(discussions, discussion)
 	}
 
 	return discussions, nil
