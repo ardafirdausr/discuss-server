@@ -1,0 +1,12 @@
+language: go
+
+go:
+- 1.16.x
+
+before_scripts:
+
+scripts:
+- go test -v ./...
+
+before_deploy:
+- touch .env

@@ -1,0 +1,10 @@
+version: "3.9"
+services:
+  discuss:
+    build:
+      context: .
+      dockerfile: .
+    restart: always
+    env_file: .env
+    ports:
+      - "8080:8080"
