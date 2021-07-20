@@ -10,3 +10,12 @@ scripts:
 
 before_deploy:
 - touch .env
+
+deploy:
+  provider: heroku
+  skip_cleanup: true
+  api_key:
+    secure: ANgswI3jk7bOgAuQQX/n/pRtiBxU+vh/eRdMRTSgXRttoXprmYQpfdSHZO7jfQFKap4rki3BwiUuVbp2wLpwenNebjkLdxXBhU9i1nLeJ2LbkjIWy5pw29w0DU9lX3A5TPmDFbIS4GYOLoAqGZ/OTYnhNh7oMys4zwItakEJfz9tQKXV8Nt/jYx7Sj7LDNOay6tNnnYyH4gax+Z07xNdkJvZ//3GFp7ijzVPO52RwkfpJijYMt6lcCtn32x7Vo1gF5PorTB3WoKuokM7hHDputMxvxJCgM19mYQSRVMRSTCI2RuBPP6TF85I0e41z2q1IPMlFehAjvztqZWZEJnw8CjdFLwOPSKZSfOHIWojsQsV1lkIiDM4Oi1xT/6hxF5gFegSttanPeI+0+l7kF6lJ906T622BKhbOvMhKJHYsSuGpSvkGFOJbcP12J6kVZqOBcM2qhlbxECZMstvIY/WC/yfAkBS5Snr3G+bp9NsFxJwZaT7ySMOQg1ZRAu5KDt7L57D49cOwwsE8g4jq+guMOeH/P3OhgGdDDBBBxTCapAAp37f9iPxkHiPCsuExxMngyGpTBj9tIlG3KF00iaba1xtXjUg/VD9zIeJivHzUT8FBxWAwjX5sabhdK6YySMAsacSvwIwPaiBsCWkDhU1EWwwen5ppr/wgom1Xx1pyNE=
+  on: main
+  app:
+    main: ardafirdausr-discuss-server

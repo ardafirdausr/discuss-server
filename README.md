@@ -1,9 +1,9 @@
 <h1 align="center">Discuss</h1>
 
 <p align="center">
-  <img src="https://travis-ci.com/ardafirdausr/discuss-server.svg?branch=main" alt="Build Status">
+  <img src="https://travis-ci.com/ardafirdausr/discuss-server.svg?token=uh3y4caLgmFxavjfLqCz&branch=main" alt="Release">
   <img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License">  
-  <img src="https://img.shields.io/github/v/release/ardafirdausr/discuss-server.svg?style=flat" alt="Release">
+  <img src="https://img.shields.io/github/v/release/ardafirdausr/discuss-server.svg?style=flat" alt="Release">  
 </p>
 
 Real-time chat app for discussion. Create and invite your friends to join your discussion room and start the discussion.
