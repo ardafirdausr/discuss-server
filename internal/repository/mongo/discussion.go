@@ -77,7 +77,7 @@ func (dr DiscussionRepository) loadMembers(model *discussionModel) error {
 	model.Members = make([]*userModel, 0)
 	for csr.Next(ctx) {
 		var userModel userModel
-		if err := csr.Decode(&userModel); err == nil {
+		if err := csr.Decode(&userModel); err != nil {
 			log.Println(err.Error())
 			continue
 		}
