@@ -105,7 +105,7 @@ func (mr MessageRepository) GetPaginatedMessagesByDiscussionID(discussionID inte
 	}
 	defer csr.Close(ctx)
 
-	var messages []*entity.Message
+	var messages = make([]*entity.Message, 0)
 	for csr.Next(ctx) {
 		var messageModel messageModel
 		if err := csr.Decode(&messageModel); err != nil {
