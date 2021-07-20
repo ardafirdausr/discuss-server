@@ -6,7 +6,7 @@
   <img src="https://img.shields.io/github/v/release/ardafirdausr/discuss-server.svg?style=flat" alt="Release">
 </p>
 
-Chat app for discussion. Invite your collega to join your discussion room and delete room when its done.
+Real-time chat app for discussion. Create and invite your friends to join your discussion room and start the discussion.
 
 ### Setup
 1. Copy env.exampe to .env
@@ -14,7 +14,7 @@ Chat app for discussion. Invite your collega to join your discussion room and de
 3. Run `go get ./...`
 
 ### Run The App
-`go run ./cmd/todo/main.go`
+`go run ./cmd/discuss/main.go`
 
 ### Test The App
 `go test -v ./...`
