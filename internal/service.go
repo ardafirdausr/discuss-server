@@ -1,6 +1,8 @@
 package internal
 
-import "github.com/ardafirdausr/discuss-server/internal/entity"
+import (
+	"github.com/ardafirdausr/discuss-server/internal/entity"
+)
 
 type SSOAuthenticator interface {
 	Authenticate(token string) (*entity.User, error)
@@ -8,4 +10,15 @@ type SSOAuthenticator interface {
 
 type Tokenizer interface {
 	Generate(entity.TokenPayload) (string, error)
+	Parse(token string) (*entity.TokenPayload, error)
 }
+
+type PubSub interface {
+	Publish(channel string, message interface{}) error
+	Subscribe(channels ...string) error
+	Unsubscribe(channels ...string) error
+	Listen(listener SubscribeListener)
+	Close() error
+}
+
+type SubscribeListener func(channel string, message interface{})

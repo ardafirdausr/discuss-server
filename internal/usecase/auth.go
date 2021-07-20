@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"errors"
 	"log"
 
 	"github.com/ardafirdausr/discuss-server/internal"
@@ -23,7 +24,7 @@ func (service AuthUsecase) SSO(token string, authenticator internal.SSOAuthentic
 	}
 
 	user, err := service.userRepo.GetUserByEmail(reqUser.Email)
-	if _, ok := err.(*entity.ErrNotFound); ok {
+	if _, ok := err.(entity.ErrNotFound); ok {
 		param := entity.CreateUserParam{
 			Email:    reqUser.Email,
 			Name:     reqUser.Name,
@@ -39,6 +40,26 @@ func (service AuthUsecase) SSO(token string, authenticator internal.SSOAuthentic
 	if err != nil {
 		log.Println(err.Error())
 		return nil, err
+	}
+
+	return user, nil
+}
+
+func (service AuthUsecase) GetUserFromToken(token string, tokenizer internal.Tokenizer) (*entity.User, error) {
+	if len(token) < 1 {
+		return nil, errors.New("token is not provided")
+	}
+
+	payload, err := tokenizer.Parse(token)
+	if err != nil {
+		log.Println(err.Error())
+		return nil, errors.New("invalid token")
+	}
+
+	user, err := service.userRepo.GetUserByID(payload.ID)
+	if err != nil {
+		log.Println(err.Error())
+		return nil, errors.New("user not found")
 	}
 
 	return user, nil

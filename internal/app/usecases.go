@@ -5,13 +5,19 @@ import (
 	"github.com/ardafirdausr/discuss-server/internal/usecase"
 )
 
-type UseCases struct {
-	AuthUsecase internal.AuthUsecase
+type Usecases struct {
+	AuthUsecase       internal.AuthUsecase
+	DiscussionUsecase internal.DiscussionUsecase
+	MessageUsecase    internal.MessageUsecase
 }
 
-func newUseCases(repos *Repositories) *UseCases {
+func newUsecases(repos *repositories) *Usecases {
 	authUsecase := usecase.NewAuthUsecase(repos.userRepo)
-	return &UseCases{
-		AuthUsecase: authUsecase,
+	discussionUsecase := usecase.NewDiscussionUsecase(repos.discussionRepo)
+	messageUsecase := usecase.NewMessageUsecase(repos.messageRepo)
+	return &Usecases{
+		AuthUsecase:       authUsecase,
+		DiscussionUsecase: discussionUsecase,
+		MessageUsecase:    messageUsecase,
 	}
 }
