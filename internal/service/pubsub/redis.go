@@ -20,7 +20,7 @@ func NewRedisPubSub(client *redis.Client) *RedisPubSub {
 	}
 }
 
-func (rps RedisPubSub) Publish(channel string, message interface{}) error {
+func (rps RedisPubSub) Publish(channel string, message string) error {
 	icmd := rps.client.Publish(channel, message)
 	return icmd.Err()
 }

@@ -14,11 +14,11 @@ type Tokenizer interface {
 }
 
 type PubSub interface {
-	Publish(channel string, message interface{}) error
+	Publish(channel string, message string) error
 	Subscribe(channels ...string) error
 	Unsubscribe(channels ...string) error
 	Listen(listener SubscribeListener)
 	Close() error
 }
 
-type SubscribeListener func(channel string, message interface{})
+type SubscribeListener func(channel string, message string)

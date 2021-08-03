@@ -51,6 +51,6 @@ func (muc MessageUsecase) SendMessage(pubsub internal.PubSub, param entity.Creat
 		return nil, err
 	}
 
-	pubsub.Publish(msgChannel, msgPayload)
+	pubsub.Publish(msgChannel, string(msgPayload))
 	return message, nil
 }

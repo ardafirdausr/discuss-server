@@ -14,42 +14,38 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func (dws DiscussWebSocket) readClientMessage(sc *socketClient) (*entity.Message, error) {
-	_, msgContent, err := sc.conn.ReadMessage()
-	if err != nil {
-		log.Println(err.Error())
-		return nil, err
-	}
-
-	var message entity.CreateMessage
-	if err := json.Unmarshal(msgContent, &message); err != nil {
-		sc.conn.WriteMessage(websocket.TextMessage, []byte("Failed send message"))
-		log.Println(err.Error())
-		return nil, err
-	}
-	message.Sender = *sc.user
-
-	messageSent, err := dws.app.Usecases.MessageUsecase.SendMessage(sc.pubsub, message)
-	if err != nil {
-		sc.conn.WriteMessage(websocket.TextMessage, []byte("Failed send message"))
-		log.Println(err.Error())
-		return nil, err
-	}
-
-	return messageSent, nil
-}
-
-func (dws DiscussWebSocket) listenSubscribeMessage(sc *socketClient) {
-	listener := func(channel string, msg interface{}) {
-		strMsg, ok := msg.(string)
-		if !ok {
-			err := errors.New("failed convert channel message to string")
+func (dws DiscussWebSocket) listenClientMessage(sc *socketClient, quit chan<- bool) {
+	for {
+		_, msgContent, err := sc.conn.ReadMessage()
+		if _, ok := err.(*websocket.CloseError); ok {
 			log.Println(err.Error())
+			quit <- true
 			return
 		}
 
+		if err != nil {
+			log.Println(err.Error())
+			sc.conn.WriteMessage(websocket.TextMessage, []byte("Failed send message"))
+		}
+
+		var message entity.CreateMessage
+		if err := json.Unmarshal(msgContent, &message); err != nil {
+			log.Println(err.Error())
+			sc.conn.WriteMessage(websocket.TextMessage, []byte("Failed send message"))
+		}
+		message.Sender = *sc.user
+
+		if _, err := dws.app.Usecases.MessageUsecase.SendMessage(sc.pubsub, message); err != nil {
+			log.Println(err.Error())
+			sc.conn.WriteMessage(websocket.TextMessage, []byte("Failed send message"))
+		}
+	}
+}
+
+func (dws DiscussWebSocket) listenSubscribeMessage(sc *socketClient) {
+	listener := func(channel string, msg string) {
 		var message entity.Message
-		if err := json.Unmarshal([]byte(strMsg), &message); err != nil {
+		if err := json.Unmarshal([]byte(msg), &message); err != nil {
 			err := errors.New("failed convert channel message to message object")
 			log.Println(err.Error())
 			return
@@ -59,7 +55,7 @@ func (dws DiscussWebSocket) listenSubscribeMessage(sc *socketClient) {
 			return
 		}
 
-		sc.conn.WriteMessage(websocket.TextMessage, []byte(strMsg))
+		sc.conn.WriteMessage(websocket.TextMessage, []byte(msg))
 	}
 	sc.pubsub.Listen(listener)
 }
@@ -95,20 +91,12 @@ func (dws DiscussWebSocket) ChatSocketHandler(c echo.Context) error {
 	}
 	sc.pubsub.Subscribe(discussionChannels...)
 
+	quit := make(chan bool)
+	defer close(quit)
 	wsLogger.Printf("%s connected to the chat socket \n", user.Email)
 	go dws.listenSubscribeMessage(sc)
-	for {
-		message, err := dws.readClientMessage(sc)
-		if _, ok := err.(*websocket.CloseError); ok {
-			log.Println(err.Error())
-			return nil
-		}
+	go dws.listenClientMessage(sc, quit)
 
-		if err != nil {
-			log.Println(err.Error())
-			continue
-		}
-
-		wsLogger.Printf("%s send %s message to a %s channel\n", user.Email, message.ContentType, message.ReceiverType)
-	}
+	<-quit
+	return nil
 }
