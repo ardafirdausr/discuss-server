@@ -1,0 +1,28 @@
+version: '3.3'
+services:
+  discuss-server:
+    image: ardafirdausr/discuss-server:latest
+    container_name: discuss-server
+    restart: unless-stopped
+    environment:
+      - HOST=${HOST}
+      - PORT=${PORT}
+      - DEBUG=${DEBUG}
+      - MONGO_DB_URI=${MONGO_DB_URI}
+      - MONGO_DB_NAME=${MONGO_DB_NAME}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - GOOGLE_OAUTH_CLIENT_ID=${GOOGLE_OAUTH_CLIENT_ID}
+      - SENTRY_DSN=${SENTRY_DSN}
+    ports:
+      - '8001:${PORT}'
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 200M
+        reservations:
+          cpus: '0.25'
+          memory: 50M
